@@ -1,0 +1,21 @@
+CREATE TABLE hotel (
+    id_hotel INT PRIMARY KEY AUTO_INCREMENT,
+    nom_hotel VARCHAR(50),
+    adresse VARCHAR(50),
+    ville VARCHAR(50),
+    nombre_places_parking INT,
+    places_parking_disponibles INT,
+    categorie ENUM('1 étoile', '2 étoiles', '3 étoiles', '4 étoiles', '5 étoiles')
+);
+
+CREATE TABLE plan_vacance (
+    id_plan INT PRIMARY KEY AUTO_INCREMENT,
+    nom_utilisateur VARCHAR(50),
+    date_depart DATE,
+    date_retour DATE CHECK (date_retour > date_depart),
+    type_transport ENUM('voiture', 'taxi', 'bus', 'plane'),
+    location_voiture ENUM('oui', 'non'),
+    besoin_parking ENUM('oui', 'non'),
+    id_hotel INT,
+    FOREIGN KEY (id_hotel) REFERENCES hotel(id_hotel)
+);
