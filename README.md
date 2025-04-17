@@ -1,18 +1,21 @@
-EasyParki – Gestion de Plans de Vacances 
-Description du Projet
-Le module Gestion de Plans de Vacances d’EasyParki permet aux utilisateurs de planifier leurs séjours de manière intuitive. En plus de choisir un hôtel, ils peuvent visualiser en temps réel les places de parking disponibles associées à chaque hôtel.
+# EasyParki – Gestion de Plans de Vacances
+
+## 📝 Description du Projet
+Le module **Gestion de Plans de Vacances** d’EasyParki permet aux utilisateurs de planifier leurs séjours de manière intuitive.  
+En plus de choisir un hôtel, ils peuvent visualiser en temps réel les places de parking disponibles associées à chaque hôtel.  
 L’objectif est d’offrir une interface conviviale, fonctionnelle et durable, centralisant hébergement et mobilité urbaine.
 
-Objectifs Fonctionnels
-Créer un plan de vacances personnalisé (dates, transport, location voiture...).
+---
 
-Sélectionner un hôtel avec informations de parking : nombre total et nombre de places disponibles.
+## 🎯 Objectifs Fonctionnels
+- Créer un plan de vacances personnalisé (dates, transport, location voiture...).
+- Sélectionner un hôtel avec informations de parking : nombre total et nombre de places disponibles.
+- Vérifier la cohérence des dates (date de retour > date de départ).
+- Afficher un message de confirmation lors d’une soumission réussie.
 
-Vérifier la cohérence des dates (date de retour > date de départ).
+---
 
-Afficher un message de confirmation lors d’une soumission réussie.
-
-Architecture du Projet
+## 🧱 Architecture du Projet
 /Model/*
   ├── Hotel.php                
   └── PlanVacance.php     
@@ -43,8 +46,8 @@ Architecture du Projet
   /config/
   └── config.php   
            
-Modèle de Données
-Table : hotel
+## Modèle de Données
+### Table : hotel
 
 Attribut	
 id_hotel	
@@ -66,8 +69,8 @@ location_voiture
 besoin_parking	
 id_hotel
 	
-Installation & Configuration
-Cloner le projet :
+## Installation & Configuration
+### Cloner le projet :
 
 bash
 Copier
@@ -76,7 +79,7 @@ git clone https://github.com/ton-utilisateur/easyparki.git
 cd easyparki
 Créer la base de données avec les tables ci-dessus (PostgreSQL recommandé).
 
-Configurer config/config.php :
+### Configurer config/config.php :
 
 php
 Copier
@@ -94,13 +97,13 @@ php -S localhost:8000
 Utilisation
 Accéder à http://localhost:8000/View/front/addplanVacancefront.php
 
-Compléter le formulaire
+### Compléter le formulaire
 
 Sélectionner un hôtel : les infos de parking s’affichent
 
 Valider → message de succès animé + redirection
 
-#Contribution
+## Contribution
 Fork du projet
 
 Nouvelle branche : git checkout -b feature-nouvelle-fonction
@@ -111,7 +114,7 @@ Push : git push origin feature-nouvelle-fonction
 
 Pull Request 
 
-Licence
+## Licence
 Ce projet est sous licence MIT.
 Libre d'utilisation, modification, distribution, avec attribution de l’auteur original.
 
