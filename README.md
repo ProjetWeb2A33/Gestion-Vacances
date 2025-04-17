@@ -1,13 +1,13 @@
 # EasyParki – Gestion de Plans de Vacances
 
-## 📝 Description du Projet
+## Description du Projet
 Le module **Gestion de Plans de Vacances** d’EasyParki permet aux utilisateurs de planifier leurs séjours de manière intuitive.  
 En plus de choisir un hôtel, ils peuvent visualiser en temps réel les places de parking disponibles associées à chaque hôtel.  
 L’objectif est d’offrir une interface conviviale, fonctionnelle et durable, centralisant hébergement et mobilité urbaine.
 
 ---
 
-## 🎯 Objectifs Fonctionnels
+## Objectifs Fonctionnels
 - Créer un plan de vacances personnalisé (dates, transport, location voiture...).
 - Sélectionner un hôtel avec informations de parking : nombre total et nombre de places disponibles.
 - Vérifier la cohérence des dates (date de retour > date de départ).
@@ -15,8 +15,8 @@ L’objectif est d’offrir une interface conviviale, fonctionnelle et durable, 
 
 ---
 
-## 🧱 Architecture du Projet
-/Model/*
+##  Architecture du Projet
+/Model/
   ├── Hotel.php                
   └── PlanVacance.php     
 
@@ -49,7 +49,7 @@ L’objectif est d’offrir une interface conviviale, fonctionnelle et durable, 
 ## Modèle de Données
 ### Table : hotel
 
-Attribut	
+### Attribut	
 id_hotel	
 nom_hotel	
 adresse	
@@ -59,7 +59,7 @@ nombre_places_parking
 places_parking_disponibles	
 Table : plan_vacance
 
-Attribut	
+### Attribut	
 id_plan	SERIAL 
 nom_utilisateur	
 date_depart	
@@ -77,7 +77,6 @@ Copier
 Modifier
 git clone https://github.com/ton-utilisateur/easyparki.git
 cd easyparki
-Créer la base de données avec les tables ci-dessus (PostgreSQL recommandé).
 
 ### Configurer config/config.php :
 
@@ -118,7 +117,7 @@ Pull Request
 Ce projet est sous licence MIT.
 Libre d'utilisation, modification, distribution, avec attribution de l’auteur original.
 
-Auteur
+## Auteur
 Emna Ben Hassine
 Université Esprit – Projet EasyParki
 Thème : Urbanisme, Mobilité et Communauté Durable
