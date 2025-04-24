@@ -193,11 +193,11 @@ $tab = $c->listHotels();
     }
     
     .btn-danger {
-      background: linear-gradient(45deg, #ff416c, #ff4b2b);
-      border: none;
-      box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);
-    }
-    
+    background-color: red;
+    color: white;
+    border: none;
+}
+
     .btn-sm {
       padding: 0.5rem 1rem;
       font-size: 0.875rem;
@@ -632,7 +632,7 @@ $tab = $c->listHotels();
             <div class="modal-overlay">
                 <div class="modal-content">
                     <h4>Confirmer la suppression</h4>
-                    <p>Êtes-vous sûr de vouloir supprimer cet hôtel ? Cette action est irréversible.</p>
+                    <p>Êtes-vous sûr de vouloir supprimer cet hôtel ?</p>
                     <div class="modal-buttons">
                         <button onclick="this.closest('.modal-overlay').remove()" 
                                 class="btn btn-secondary">

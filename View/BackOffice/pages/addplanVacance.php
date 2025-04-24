@@ -149,6 +149,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .sidenav .material-symbols-rounded {
       color: white !important;
     }
+
+.form-control.is-invalid {
+  border: 1px solid #dc3545 !important;
+}
+
+.form-control.is-valid {
+  border: 1px solid #28a745 !important;
+}
+
+.form-select.is-invalid {
+  border: 1px solid #dc3545 !important;
+}
+
+.form-select.is-valid {
+  border: 1px solid #28a745 !important;
+}
   </style>
 </head>
 
@@ -284,7 +300,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <option value="voiture">Voiture</option>
               <option value="taxi">Taxi</option>
               <option value="bus">Bus</option>
-              <option value="plane">Avion</option>
             </select>
           </div>
           <div class="mb-3">
