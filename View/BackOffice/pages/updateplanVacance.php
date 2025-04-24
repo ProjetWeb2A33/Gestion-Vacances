@@ -12,7 +12,7 @@ if (isset($_POST["id"])) {
     $plan = $planC->showPlan($_POST["id"]);
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (
+        if (!empty($_POST['identifiant']) &&
             !empty($_POST['nom_utilisateur']) &&
             !empty($_POST['date_depart']) &&
             !empty($_POST['date_retour']) &&
@@ -24,6 +24,7 @@ if (isset($_POST["id"])) {
             if (strtotime($_POST['date_retour']) > strtotime($_POST['date_depart'])) {
                 $updatedPlan = new PlanVacance(
                     $_POST['id'],
+                    $_POST['identifiant'],
                     $_POST['nom_utilisateur'],
                     $_POST['date_depart'],
                     $_POST['date_retour'],
@@ -176,7 +177,7 @@ if (isset($_POST["id"])) {
 <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 fixed-start" id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand px-4 py-3 m-0" href="tables.html">
+      <a class="navbar-brand px-4 py-3 m-0" href="tables.php">
   <img src="../assets/img/easyparki.png" class="navbar-brand-img" width="50">
   <span class="ms-1 text-white">EasyParki</span>
 </a>
@@ -269,7 +270,7 @@ if (isset($_POST["id"])) {
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0">
       <div class="mx-3">
-        <a class="btn btn-outline-white mt-4 w-100" href="http://localhost/ProjetWeb/View/FrontOffice/Logis/about.html">FrontOffice</a>
+        <a class="btn btn-outline-white mt-4 w-100" href="http://localhost/ProjetWeb/View/FrontOffice/Logis/about.php">FrontOffice</a>
       </div>
     </div>
   </aside>
@@ -294,6 +295,10 @@ if (isset($_POST["id"])) {
               <div class="form-group">
                 <label>Nom Utilisateur</label>
                 <input type="text" name="nom_utilisateur" class="form-control" value="<?= $planData['nom_utilisateur'] ?>">
+              </div>
+              <div class="form-group">
+                <label>identifiant</label>
+                <input type="text" name="identifiant" class="form-control" value="<?= $planData['identifiant'] ?>">
               </div>
               
               <div class="form-group">
@@ -355,8 +360,8 @@ if (isset($_POST["id"])) {
                   <option value="">Sélectionner un hôtel</option>
                   <?php foreach ($hotels as $hotel): ?>
                     <option value="<?= $hotel['id_hotel'] ?>" <?= ($hotel['id_hotel'] == $planData['id_hotel']) ? 'selected' : '' ?>>
-                      Hôtel #<?= $hotel['id_hotel'] ?>
-                    </option>
+    <?= htmlspecialchars($hotel['nom_hotel']) ?> - <?= htmlspecialchars($hotel['ville']) ?>
+</option>
                   <?php endforeach; ?>
                 </select>
               </div>

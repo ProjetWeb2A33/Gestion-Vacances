@@ -173,7 +173,7 @@ if (isset($_POST["id"])) {
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 fixed-start" id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand px-4 py-3 m-0" href="tables.html">
+      <a class="navbar-brand px-4 py-3 m-0" href="tables.php">
   <img src="../assets/img/easyparki.png" class="navbar-brand-img" width="50">
   <span class="ms-1 text-white">EasyParki</span>
 </a>
@@ -266,11 +266,10 @@ if (isset($_POST["id"])) {
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0">
       <div class="mx-3">
-        <a class="btn btn-outline-white mt-4 w-100" href="http://localhost/ProjetWeb/View/FrontOffice/Logis/about.html">FrontOffice</a>
+        <a class="btn btn-outline-white mt-4 w-100" href="http://localhost/ProjetWeb/View/FrontOffice/Logis/about.php">FrontOffice</a>
       </div>
     </div>
   </aside>
-
 
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <div class="container-fluid py-4">
@@ -281,40 +280,45 @@ if (isset($_POST["id"])) {
 
         <?php if(isset($_POST['id'])): ?>
         <h3 class="mb-4">Modifier l'hôtel</h3>
-        <form method="POST" onsubmit="return validateForm()">
+        <form method="POST" id="hotelForm">
           <input type="hidden" name="id" value="<?= $hotel['id_hotel'] ?>">
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
                 <label>Nom de l'hôtel</label>
-                <input type="text" name="nom" class="form-control" value="<?= $hotel['nom_hotel'] ?>">
+                <input type="text" name="nom" id="nom" class="form-control" value="<?= $hotel['nom_hotel'] ?>">
+                <div class="form-feedback" id="nomFeedback"></div>
               </div>
               
               <div class="form-group">
                 <label>Adresse</label>
-                <input type="text" name="adresse" class="form-control" value="<?= $hotel['adresse'] ?>">
+                <input type="text" name="adresse" id="adresse" class="form-control" value="<?= $hotel['adresse'] ?>">
+                <div class="form-feedback" id="adresseFeedback"></div>
               </div>
               
               <div class="form-group">
                 <label>Ville</label>
-                <input type="text" name="ville" class="form-control" value="<?= $hotel['ville'] ?>">
+                <input type="text" name="ville" id="ville" class="form-control" value="<?= $hotel['ville'] ?>">
+                <div class="form-feedback" id="villeFeedback"></div>
               </div>
             </div>
             
             <div class="col-md-6">
               <div class="form-group">
                 <label>Places parking totales</label>
-                <input type="number" name="npp" class="form-control" value="<?= $hotel['nombre_places_parking'] ?>">
+                <input type="number" name="npp" id="npp" class="form-control" value="<?= $hotel['nombre_places_parking'] ?>">
+                <div class="form-feedback" id="nppFeedback"></div>
               </div>
               
               <div class="form-group">
                 <label>Places disponibles</label>
-                <input type="number" name="ppd" class="form-control" value="<?= $hotel['places_parking_disponibles'] ?>">
+                <input type="number" name="ppd" id="ppd" class="form-control" value="<?= $hotel['places_parking_disponibles'] ?>">
+                <div class="form-feedback" id="ppdFeedback"></div>
               </div>
               
               <div class="form-group">
                 <label>Catégorie</label>
-                <select name="categorie" class="form-control">
+                <select name="categorie" id="categorie" class="form-control">
                   <?php $cats = ["1 étoile", "2 étoiles", "3 étoiles", "4 étoiles", "5 étoiles"]; ?>
                   <?php foreach ($cats as $cat): ?>
                     <option value="<?= $cat ?>" <?= ($cat == $hotel['categorie']) ? 'selected' : '' ?>>
@@ -322,12 +326,12 @@ if (isset($_POST["id"])) {
                     </option>
                   <?php endforeach; ?>
                 </select>
+                <div class="form-feedback" id="categorieFeedback"></div>
               </div>
             </div>
           </div>
           
           <div class="text-end mt-4">
-            <div class="error-message" id="errorMessage"></div>
             <button type="submit" class="btn btn-primary">
               <i class="fas fa-save me-2"></i>Mettre à jour
             </button>
@@ -341,54 +345,177 @@ if (isset($_POST["id"])) {
     </div>
   </main>
 
-  <!-- Validation Script -->
+  <!-- Modal de confirmation -->
+  <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmation</h5>
+        </div>
+        <div class="modal-body">
+          Êtes-vous sûr de vouloir modifier cet hôtel ?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" id="confirmBtn" class="btn bg-gradient-primary text-white">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Succès</h5>
+        </div>
+        <div class="modal-body">
+          L'hôtel a été modifié avec succès!
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='listHotels.php'">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function validateForm() {
-      const errorMessage = document.getElementById('errorMessage');
-      let errors = [];
-      
-      // Get form values
-      const nom = document.getElementsByName('nom')[0].value.trim();
-      const adresse = document.getElementsByName('adresse')[0].value.trim();
-      const ville = document.getElementsByName('ville')[0].value.trim();
-      const npp = document.getElementsByName('npp')[0].value;
-      const ppd = document.getElementsByName('ppd')[0].value;
-      const categorie = document.getElementsByName('categorie')[0].value;
+    // Fonction pour afficher les messages de feedback
+    function showFeedback(elementId, message, isError) {
+      const feedbackElement = document.getElementById(elementId);
+      feedbackElement.textContent = message;
+      feedbackElement.className = 'form-feedback ' + (isError ? 'text-danger' : 'text-success');
+    }
 
-      // Validation rules
-      if (!nom) errors.push("Le nom de l'hôtel est obligatoire");
-      if (!adresse) errors.push("L'adresse est obligatoire");
-      if (!ville) errors.push("La ville est obligatoire");
-      if (!npp) errors.push("Le nombre de places totales est obligatoire");
-      if (!ppd) errors.push("Le nombre de places disponibles est obligatoire");
-      if (!categorie) errors.push("La catégorie est obligatoire");
-
-      if (nom.length > 8) errors.push("Le nom ne doit pas dépasser 8 caractères");
-      if (ville.length > 8) errors.push("La ville ne doit pas dépasser 8 caractères");
-
-      if (npp && ppd) {
-        const total = parseInt(npp);
-        const available = parseInt(ppd);
-        
-        if (available > total) {
-          errors.push("Les places disponibles ne peuvent pas dépasser le total des places");
-        }
-        if (total <= 0) errors.push("Le nombre total de places doit être positif");
-        if (available < 0) errors.push("Les places disponibles ne peuvent pas être négatives");
-      }
-
-      // Display errors or submit
-      if (errors.length > 0) {
-        errorMessage.innerHTML = errors.join('<br>');
+    // Fonctions de validation individuelles
+    function validateNom() {
+      const nom = document.getElementById('nom').value.trim();
+      if (!nom) {
+        showFeedback('nomFeedback', 'Le nom est requis', true);
+        return false;
+      } else if (nom.length > 8) {
+        showFeedback('nomFeedback', 'Max 8 caractères', true);
         return false;
       }
-      
+      showFeedback('nomFeedback', 'Valide', false);
       return true;
     }
+
+    function validateAdresse() {
+      const adresse = document.getElementById('adresse').value.trim();
+      if (!adresse) {
+        showFeedback('adresseFeedback', 'L\'adresse est requise', true);
+        return false;
+      }
+      showFeedback('adresseFeedback', 'Valide', false);
+      return true;
+    }
+
+    function validateVille() {
+      const ville = document.getElementById('ville').value.trim();
+      if (!ville) {
+        showFeedback('villeFeedback', 'La ville est requise', true);
+        return false;
+      } else if (ville.length > 8) {
+        showFeedback('villeFeedback', 'Max 8 caractères', true);
+        return false;
+      }
+      showFeedback('villeFeedback', 'Valide', false);
+      return true;
+    }
+
+    function validateNpp() {
+      const npp = document.getElementById('npp').value;
+      if (!npp) {
+        showFeedback('nppFeedback', 'Le nombre total est requis', true);
+        return false;
+      } else if (parseInt(npp) <= 0) {
+        showFeedback('nppFeedback', 'Doit être positif', true);
+        return false;
+      }
+      showFeedback('nppFeedback', 'Valide', false);
+      return true;
+    }
+
+    function validatePpd() {
+      const ppd = document.getElementById('ppd').value;
+      const npp = document.getElementById('npp').value;
+      
+      if (!ppd) {
+        showFeedback('ppdFeedback', 'Le nombre disponible est requis', true);
+        return false;
+      } else if (parseInt(ppd) < 0) {
+        showFeedback('ppdFeedback', 'Ne peut pas être négatif', true);
+        return false;
+      } else if (npp && parseInt(ppd) > parseInt(npp)) {
+        showFeedback('ppdFeedback', 'Ne peut pas dépasser le total', true);
+        return false;
+      }
+      showFeedback('ppdFeedback', 'Valide', false);
+      return true;
+    }
+
+    function validateCategorie() {
+      const categorie = document.getElementById('categorie').value;
+      if (!categorie) {
+        showFeedback('categorieFeedback', 'La catégorie est requise', true);
+        return false;
+      }
+      showFeedback('categorieFeedback', 'Valide', false);
+      return true;
+    }
+
+    // Validation globale
+    function validateForm(event) {
+      event.preventDefault();
+      
+      const isNomValid = validateNom();
+      const isAdresseValid = validateAdresse();
+      const isVilleValid = validateVille();
+      const isNppValid = validateNpp();
+      const isPpdValid = validatePpd();
+      const isCategorieValid = validateCategorie();
+
+      if (isNomValid && isAdresseValid && isVilleValid && 
+          isNppValid && isPpdValid && isCategorieValid) {
+        // Afficher la modale de confirmation
+        var myModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        myModal.show();
+      }
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+      // Validation en temps réel
+      document.getElementById('nom').addEventListener('input', validateNom);
+      document.getElementById('adresse').addEventListener('input', validateAdresse);
+      document.getElementById('ville').addEventListener('input', validateVille);
+      document.getElementById('npp').addEventListener('input', function() {
+        validateNpp();
+        if (document.getElementById('ppd').value) validatePpd();
+      });
+      document.getElementById('ppd').addEventListener('input', validatePpd);
+      document.getElementById('categorie').addEventListener('change', validateCategorie);
+
+      // Soumission du formulaire
+      document.getElementById('hotelForm').addEventListener('submit', validateForm);
+
+      // Confirmation
+      document.getElementById('confirmBtn').addEventListener('click', function() {
+        document.getElementById('hotelForm').submit();
+      });
+    });
+
+    // Fonction pour afficher la modale de succès
+    function showSuccessModal() {
+      var myModal = new bootstrap.Modal(document.getElementById('successModal'));
+      myModal.show();
+    }
   </script>
+
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-  <script src="../assets/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
 </body>
 </html>

@@ -172,7 +172,7 @@
 
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
-    <a href="about.html" class="logo d-flex align-items-center me-auto">
+    <a href="about.php" class="logo d-flex align-items-center me-auto">
         <h1 class="sitename">EasyParki</h1>
       </a>
 
@@ -204,7 +204,7 @@
       </ul>
     </li>
     <li><a href="Covoiturage.html">Covoiturage</a></li>
-    <li><a href="Recharge.html">Recharge</a></li>
+    <li><a href="Recharge.html">Service</a></li>
     <li><a href="Evenement.html">Evenement</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
@@ -219,11 +219,10 @@
   <main class="main">
 
     <!-- Page Title -->
-    <div class="page-title dark-background" data-aos="fade" style="background-image: url(assets/img/ey.png);">
+    <div class="page-title dark-background" data-aos="fade" style="background-image: url(assets/img/44.jpeg);">
       <div class="container position-relative">
-        <h1>Vacances</h1>
-        <p>Gérez vos vacances en toute simplicité : consultez les destinations, planifiez vos activités et optimisez vos séjours pour une expérience inoubliable.</p>
-        <nav class="breadcrumbs">
+      <h1>Réservez votre hôtel de rêve</h1>
+      <p>Parcourez notre collection d'hôtels soigneusement sélectionnés pour répondre à toutes vos envies, du charme authentique au luxe contemporain.</p>
           <ol>
             <li><a href="index.html">Home</a></li>
             <li class="current">Vacances</li>

@@ -132,13 +132,13 @@
               <li>
                 <a href="listplansVacancefront.php" class="dropdown-item">
                   <i class="bi bi-list-task"></i>
-                  List Plans Vacances
+                 Accéder à mon plan
                 </a>
               </li>
             </ul>
           </li>
           <li><a href="Covoiturage.html">Covoiturage</a></li>
-          <li><a href="Recharge.html">Recharge</a></li>
+          <li><a href="Recharge.html">Service</a></li>
           <li><a href="Evenement.html">Evenement</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
@@ -153,7 +153,7 @@
   <main class="main">
 
     <!-- Page Title -->
-    <div class="page-title dark-background" data-aos="fade" style="background-image: url(assets/img/ey.png);">
+    <div class="page-title dark-background" data-aos="fade" style="background-image: url(assets/img/55.png);">
       <div class="container position-relative">
         <h1>Vacances</h1>
         <p>Gérez vos vacances en toute simplicité : consultez les destinations, planifiez vos activités et optimisez vos séjours pour une expérience inoubliable.</p>

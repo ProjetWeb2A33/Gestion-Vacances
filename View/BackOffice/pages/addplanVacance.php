@@ -9,18 +9,22 @@ $hotelC = new HotelC();
 $hotels = $hotelC->listHotels();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (
-        !empty($_POST['nom_utilisateur']) &&
-        !empty($_POST['date_depart']) &&
-        !empty($_POST['date_retour']) &&
-        !empty($_POST['type_transport']) &&
-        !empty($_POST['location_voiture']) &&
-        !empty($_POST['besoin_parking']) &&
-        !empty($_POST['id_hotel'])
-    ) {
+  if (
+    !empty($_POST['identifiant']) &&
+    !empty($_POST['nom_utilisateur']) &&
+    !empty($_POST['date_depart']) &&
+    !empty($_POST['date_retour']) &&
+    !empty($_POST['type_transport']) &&
+    !empty($_POST['location_voiture']) &&
+    !empty($_POST['besoin_parking']) &&
+    !empty($_POST['id_hotel'])
+)
+
+     {
         if (strtotime($_POST['date_retour']) > strtotime($_POST['date_depart'])) {
             $plan = new PlanVacance(
                 null,
+                $_POST['identifiant'],
                 $_POST['nom_utilisateur'],
                 $_POST['date_depart'],
                 $_POST['date_retour'],
@@ -152,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 fixed-start" id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand px-4 py-3 m-0" href="tables.html">
+      <a class="navbar-brand px-4 py-3 m-0" href="tables.php">
   <img src="../assets/img/easyparki.png" class="navbar-brand-img" width="50">
   <span class="ms-1 text-white">EasyParki</span>
 </a>
@@ -260,6 +264,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="form-label">Nom Utilisateur:</label>
             <input type="text" class="form-control" name="nom_utilisateur">
           </div>
+          <div class="mb-3">
+  <label class="form-label">Identifiant Utilisateur:</label>
+  <input type="text" class="form-control" name="identifiant">
+</div>
+
           <div class="mb-3">
             <label class="form-label">Date Départ:</label>
             <input type="date" class="form-control" name="date_depart">

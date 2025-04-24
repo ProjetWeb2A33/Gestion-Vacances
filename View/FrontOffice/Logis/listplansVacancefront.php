@@ -2,10 +2,24 @@
 require_once "../../../Controller/planVacanceC.php";
 require_once "../../../Controller/HotelC.php";
 
+// Initialize the controller objects
 $planC = new PlanVacanceC();
-$plans = $planC->listPlans();
 $hotelC = new HotelC();
+
+// Get all plans initially
+$plans = $planC->listPlans();
+
+// Handle the search functionality
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+  $search = $_GET['search'];
+  // Use $planC instead of $planVacanceC to call the search function
+  $plans = $planC->searchPlansByIdentifiant($search); 
+} else {
+  $plans = []; // Ensure $plans is an empty array if no search is performed
+}
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -175,13 +189,13 @@ $hotelC = new HotelC();
         <li>
           <a href="listPlansVacancefront.php" class="dropdown-item">
             <i class="bi bi-list-task"></i>
-            Liste Plans Vacances
+            Accéder à mon plan
           </a>
         </li>
       </ul>
     </li>
     <li><a href="Covoiturage.html">Covoiturage</a></li>
-    <li><a href="Recharge.html">Recharge</a></li>
+    <li><a href="Recharge.html">Service</a></li>
     <li><a href="Evenement.html">Evenement</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
@@ -210,15 +224,60 @@ $hotelC = new HotelC();
     </div><!-- End Page Title -->
     <!-- Main Content Section -->
     <section class="section">
-      <div class="container" data-aos="fade-up">
-        <div class="row">
-          <div class="col-12">
+  <div class="container" data-aos="fade-up">
+    <div class="row">
+      <div class="col-12">
+        <div class="container" data-aos="fade-up">
+          
+          <!-- Formulaire de recherche -->
+          <div class="search-container mb-4">
+            <form method="GET" class="d-flex w-100">
+              <div class="input-group">
+                <input type="text" 
+                       name="search" 
+                       class="form-control search-input" 
+                       placeholder="Veuillez saisir votre identifiant..." 
+                       value="<?= htmlspecialchars($search ?? '') ?>" 
+                       aria-label="Rechercher par identifiant">
+                <button type="submit" class="btn btn-primary search-btn">
+                  <i class="bi bi-search"></i> comfirmer
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Message d'erreur si aucun résultat trouvé -->
+          <?php if (isset($search) && !empty($search) && empty($plans)): ?>
+            <div class="alert alert-danger mt-3">
+              Aucune correspondance trouvée pour "<strong><?= htmlspecialchars($search) ?></strong>".
+            </div>
+          <?php endif; ?>
+
+          <!-- Affichage des résultats -->
+          <div class="row">
+            <div class="col-12">
+              <table class="vacation-table">
+                <?php if (!empty($plans)): ?>
+                    <!-- Your table structure to show the results -->
+                <?php endif; ?>
+              </table>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 
 
             <table class="vacation-table">
               <thead>
                 <tr>
                   <th>ID</th>
+                  <th>Identifiant</th>
                   <th>Utilisateur</th>
                   <th>Départ</th>
                   <th>Retour</th>
@@ -235,6 +294,7 @@ $hotelC = new HotelC();
                 ?>
                 <tr>
                   <td><?= $plan['id_plan'] ?></td>
+                  <td><?= $plan['identifiant'] ?></td>
                   <td><?= htmlspecialchars($plan['nom_utilisateur']) ?></td>
                   <td><?= $plan['date_depart'] ?></td>
                   <td><?= $plan['date_retour'] ?></td>
@@ -254,23 +314,38 @@ $hotelC = new HotelC();
                         <i class="bi bi-pencil"></i>
                       </button>
                     </form>
-                    <a href="deletePlanVacance.php?id=<?= $plan['id_plan'] ?>" 
-                       class="btn btn-sm btn-danger" 
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce plan?')">
-                      <i class="bi bi-trash"></i>
-                    </a>
+                    <button type="button" 
+        class="btn btn-sm btn-danger" 
+        data-bs-toggle="modal" 
+        data-bs-target="#deleteModal" 
+        data-plan-id="<?= $plan['id_plan'] ?>">
+  <i class="bi bi-trash"></i>
+</button>
                   </td>
                 </tr>
                 <?php endforeach; ?>
               </tbody>
             </table>
-          </div>
-        </div>
+    
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-    </section>
-
-
- 
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer ce plan de vacances ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Supprimer</a>
+      </div>
+    </div>
+  </div>
+</div>
+    
 
 
 </main>
@@ -341,7 +416,18 @@ $hotelC = new HotelC();
 
 <!-- Scroll Top -->
 <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
+<script>
+  // Gestion de la modal de suppression
+  document.addEventListener('DOMContentLoaded', function() {
+    var deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+      var button = event.relatedTarget;
+      var planId = button.getAttribute('data-plan-id');
+      var deleteLink = 'deletePlanVacance.php?id=' + planId;
+      document.getElementById('confirmDeleteBtn').setAttribute('href', deleteLink);
+    });
+  });
+</script>
 <!-- Preloader -->
 <div id="preloader"></div>
 

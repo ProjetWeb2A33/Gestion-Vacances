@@ -2,6 +2,7 @@
 class PlanVacance
 {
     private ?int $id_plan = null;
+    private ?string $identifiant = null; // ✅ New field
     private ?string $nom_utilisateur = null;
     private ?string $date_depart = null;
     private ?string $date_retour = null;
@@ -10,9 +11,10 @@ class PlanVacance
     private ?string $besoin_parking = null;
     private ?int $id_hotel = null;
 
-    public function __construct($id, $nu, $dd, $dr, $tt, $lv, $bp, $idh)
+    public function __construct($id, $identifiant, $nu, $dd, $dr, $tt, $lv, $bp, $idh)
     {
         $this->id_plan = $id;
+        $this->identifiant = $identifiant; // ✅ New assignment
         $this->nom_utilisateur = $nu;
         $this->date_depart = $dd;
         $this->date_retour = $dr;
@@ -22,7 +24,11 @@ class PlanVacance
         $this->id_hotel = $idh;
     }
 
-    // Getters and Setters
+    // ✅ New getter and setter
+    public function getIdentifiant() { return $this->identifiant; }
+    public function setIdentifiant($identifiant) { $this->identifiant = $identifiant; return $this; }
+
+    // Existing getters/setters...
     public function getIdPlan() { return $this->id_plan; }
     public function getNomUtilisateur() { return $this->nom_utilisateur; }
     public function setNomUtilisateur($nu) { $this->nom_utilisateur = $nu; return $this; }

@@ -10,8 +10,9 @@ $hotelC = new HotelC();
 $hotels = $hotelC->listHotels();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (
+    if (  !empty($_POST['identifiant']) &&
         !empty($_POST['nom_utilisateur']) &&
+       
         !empty($_POST['date_depart']) &&
         !empty($_POST['date_retour']) &&
         !empty($_POST['type_transport']) &&
@@ -22,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (strtotime($_POST['date_retour']) > strtotime($_POST['date_depart'])) {
             $plan = new PlanVacance(
                 null,
+                $_POST['identifiant'],
                 $_POST['nom_utilisateur'],
                 $_POST['date_depart'],
                 $_POST['date_retour'],
@@ -172,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
-    <a href="about.html" class="logo d-flex align-items-center me-auto">
+    <a href="about.php" class="logo d-flex align-items-center me-auto">
         <h1 class="sitename">EasyParki</h1>
       </a>
 
@@ -204,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </ul>
     </li>
     <li><a href="Covoiturage.html">Covoiturage</a></li>
-    <li><a href="Recharge.html">Recharge</a></li>
+    <li><a href="Recharge.html">Service</a></li>
     <li><a href="Evenement.html">Evenement</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
@@ -232,135 +234,180 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div><!-- End Page Title -->
     <section id="add-plan" class="add-plan section">
-      <div class="container" data-aos="fade-up">
-          <div class="section-header">
-              <h2>Planifier Votre Vacance</h2>
-              <p>Créez votre plan de vacances personnalisé en quelques étapes simples</p>
-          </div>
-  
-          <div class="row justify-content-center">
-              <div class="col-lg-8">
-              <?php if(!empty($error)): ?>
-                <?php if ($showSuccessMessage): ?>
-<div id="custom-message" class="message-shown">
-    Votre plan de vacances a été ajouté avec succès !
-</div>
-<script>
-    setTimeout(() => {
-        const msg = document.getElementById('custom-message');
-        msg.classList.remove('message-shown');
-        msg.classList.add('message-hidden');
-    }, 3000); // message disparaît après 3s
-</script>
-<?php endif; ?>
-<?php endif; ?>
-  
-                  <div class="card shadow-lg">
-                      <div class="card-body">
-                      <form method="POST" onsubmit="return true">
-                              <div class="row">
-                                  <div class="col-md-12 form-group">
-                                      <label for="nom_utilisateur" class="form-label">Nom Utilisateur</label>
-                                      <input type="text" name="nom_utilisateur" class="form-control" 
-                                             placeholder="Max 8 caractères" maxlength="8">
-                                  </div>
-                              </div>
-  
-                              <div class="row mt-3">
-                                  <div class="col-md-6 form-group">
-                                      <label for="date_depart" class="form-label">Date de Départ</label>
-                                      <input type="date" name="date_depart" class="form-control">
-                                  </div>
-                                  <div class="col-md-6 form-group">
-                                      <label for="date_retour" class="form-label">Date de Retour</label>
-                                      <input type="date" name="date_retour" class="form-control">
-                                  </div>
-                              </div>
-  
-                              <div class="row mt-3">
-                                  <div class="col-md-6 form-group">
-                                      <label class="form-label">Type de Transport</label>
-                                      <select name="type_transport" class="form-select">
-                                          <option value="">Choisir...</option>
-                                          <option value="voiture">Voiture Personnelle</option>
-                                          <option value="taxi">Taxi</option>
-                                          <option value="bus">Bus</option>
-                                          <option value="plane">Avion</option>
-                                      </select>
-                                  </div>
-                                  <div class="col-md-6 form-group">
-                                    <label class="form-label">Hébergement</label>
-                                    <select name="id_hotel" class="form-select">
-                                        <option value="">Choisir un hôtel...</option>
-                                        <?php foreach ($hotels as $hotel): ?>
-                                        <option value="<?= $hotel['id_hotel'] ?>">
-                                            <?= $hotel['nom_hotel'] ?> (<?= $hotel['ville'] ?>)
-                                        </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                              </div>
-  
-                              <div class="row mt-3">
-                                  <div class="col-md-6 form-group">
-                                      <label class="form-label">Location de Voiture</label>
-                                      <div class="d-flex gap-4">
-                                          <div class="form-check">
-                                              <input class="form-check-input" type="radio" name="location_voiture" 
-                                                     id="oui_location" value="oui">
-                                              <label class="form-check-label text-success" for="oui_location">
-                                                  Oui
-                                              </label>
-                                          </div>
-                                          <div class="form-check">
-                                              <input class="form-check-input" type="radio" name="location_voiture" 
-                                                     id="non_location" value="non">
-                                              <label class="form-check-label text-danger" for="non_location">
-                                                  Non
-                                              </label>
-                                          </div>
-                                      </div>
-                                  </div>
-  
-                                  <div class="col-md-6 form-group">
-                                      <label class="form-label">Besoin de Parking</label>
-                                      <div class="d-flex gap-4">
-                                          <div class="form-check">
-                                              <input class="form-check-input" type="radio" name="besoin_parking" 
-                                                     id="oui_parking" value="oui">
-                                              <label class="form-check-label text-success" for="oui_parking">
-                                                  Oui
-                                              </label>
-                                          </div>
-                                          <div class="form-check">
-                                              <input class="form-check-input" type="radio" name="besoin_parking" 
-                                                     id="non_parking" value="non">
-                                              <label class="form-check-label text-danger" for="non_parking">
-                                                  Non
-                                              </label>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-  
-                              <div class="text-center mt-4">
-                                  <button type="submit" class="btn btn-primary btn-lg">
-                                      <i class="bi bi-send me-2"></i>Créer le Plan
-                                  </button>
+  <div class="container" data-aos="fade-up">
+      <div class="section-header">
+          <h2>Planifier Votre Vacance</h2>
+          <p>Créez votre plan de vacances personnalisé en quelques étapes simples</p>
+      </div>
 
+      <div class="row justify-content-center">
+          <div class="col-lg-8">
+              <?php if(!empty($error)): ?>
+                  <div class="alert alert-danger"><?= $error ?></div>
+              <?php endif; ?>
+              
+              <div class="card shadow-lg">
+                  <div class="card-body">
+                      <form method="POST" id="vacationForm">
+                          <div class="row">
+                              <div class="col-md-12 form-group">
+                                  <label for="nom_utilisateur" class="form-label">Nom Utilisateur</label>
+                                  <input type="text" name="nom_utilisateur" id="nom_utilisateur" class="form-control" 
+                                         placeholder="Max 8 caractères" maxlength="8">
+                                  <div class="form-feedback" id="nomFeedback"></div>
                               </div>
-                          </form>
-                      </div>
+                          </div>
+                          <div class="row">
+    <div class="col-md-12 form-group">
+        <label for="identifiant" class="form-label">Identifiant</label>
+        <input type="text" name="identifiant" id="identifiant" class="form-control" 
+               placeholder="Lettres et chiffres uniquement (max 8)" maxlength="8">
+        <div class="form-feedback" id="identifiantFeedback"></div>
+    </div>
+</div>
+
+                          <div class="row mt-3">
+                              <div class="col-md-6 form-group">
+                                  <label for="date_depart" class="form-label">Date de Départ</label>
+                                  <input type="date" name="date_depart" id="date_depart" class="form-control">
+                                  <div class="form-feedback" id="dateDepartFeedback"></div>
+                              </div>
+                              <div class="col-md-6 form-group">
+                                  <label for="date_retour" class="form-label">Date de Retour</label>
+                                  <input type="date" name="date_retour" id="date_retour" class="form-control">
+                                  <div class="form-feedback" id="dateRetourFeedback"></div>
+                              </div>
+                          </div>
+
+                          <div class="row mt-3">
+                              <div class="col-md-6 form-group">
+                                  <label class="form-label">Type de Transport</label>
+                                  <select name="type_transport" id="type_transport" class="form-select">
+                                      <option value="">Choisir...</option>
+                                      <option value="voiture">Voiture</option>
+                                      <option value="taxi">Taxi</option>
+                                      <option value="bus">Bus</option>
+                                  </select>
+                                  <div class="form-feedback" id="transportFeedback"></div>
+                              </div>
+                              <div class="col-md-6 form-group">
+                                <label class="form-label">Hébergement</label>
+                                <select name="id_hotel" id="id_hotel" class="form-select">
+                                    <option value="">Choisir un hôtel...</option>
+                                    <?php foreach ($hotels as $hotel): ?>
+                                    <option value="<?= $hotel['id_hotel'] ?>">
+                                        <?= $hotel['nom_hotel'] ?> (<?= $hotel['ville'] ?>)
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div class="form-feedback" id="hotelFeedback"></div>
+                            </div>
+                          </div>
+
+                          <div class="row mt-3">
+                              <div class="col-md-6 form-group">
+                                  <label class="form-label">Location de Voiture</label>
+                                  <div class="d-flex gap-4">
+                                      <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="location_voiture" 
+                                                 id="oui_location" value="oui">
+                                          <label class="form-check-label text-success" for="oui_location">
+                                              Oui
+                                          </label>
+                                      </div>
+                                      <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="location_voiture" 
+                                                 id="non_location" value="non">
+                                          <label class="form-check-label text-danger" for="non_location">
+                                              Non
+                                          </label>
+                                      </div>
+                                  </div>
+                                  <div class="form-feedback" id="locationFeedback"></div>
+                              </div>
+
+                              <div class="col-md-6 form-group">
+                                  <label class="form-label">Besoin de Parking</label>
+                                  <div class="d-flex gap-4">
+                                      <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="besoin_parking" 
+                                                 id="oui_parking" value="oui">
+                                          <label class="form-check-label text-success" for="oui_parking">
+                                              Oui
+                                          </label>
+                                      </div>
+                                      <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="besoin_parking" 
+                                                 id="non_parking" value="non">
+                                          <label class="form-check-label text-danger" for="non_parking">
+                                              Non
+                                          </label>
+                                      </div>
+                                  </div>
+                                  <div class="form-feedback" id="parkingFeedback"></div>
+                              </div>
+                          </div>
+
+                          <div class="text-center mt-4">
+                              <button type="submit" class="btn btn-primary btn-lg">
+                                  <i class="bi bi-send me-2"></i>Créer le Plan
+                              </button>
+                          </div>
+                      </form>
                   </div>
               </div>
           </div>
       </div>
-  </section>
-  
+  </div>
+</section>
 
- 
+<!-- Modal de Confirmation -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmation</h5>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir créer ce plan de vacances ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" id="confirmSubmit" class="btn btn-primary">Confirmer</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal de Succès -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Succès</h5>
+      </div>
+      <div class="modal-body">
+        Votre plan de vacances a été créé avec succès !
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='about.php'">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-
+<style>
+.form-feedback {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    height: 20px;
+}
+.form-feedback.error {
+    color: #dc3545;
+}
+.form-feedback.success {
+    color: #28a745;
+}
+</style>
 </main>
 
 <footer id="footer" class="footer dark-background">
@@ -444,82 +491,157 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Main JS File -->
 <script src="assets/js/main.js"></script>
 <script>
- function validateForm() {
-  const today = new Date().toISOString().split('T')[0];
-  const errorMessage = document.getElementById('error-messages');
-  let errors = [];
-
-  // Get form values
-  const nomUtilisateur = document.getElementsByName('nom_utilisateur')[0].value.trim();
-  const dateDepart = document.getElementsByName('date_depart')[0].value;
-  const dateRetour = document.getElementsByName('date_retour')[0].value;
-  const typeTransport = document.getElementsByName('type_transport')[0].value;
-  const locationVoiture = document.querySelector('input[name="location_voiture"]:checked');
-  const besoinParking = document.querySelector('input[name="besoin_parking"]:checked');
-  const idHotel = document.getElementsByName('id_hotel')[0].value;
-
-  // Validation rules (same as admin version)
-  if (!nomUtilisateur) {
-    errors.push("Le nom d'utilisateur est obligatoire");
-  } else if (nomUtilisateur.length > 8) {
-    errors.push("Le nom d'utilisateur ne doit pas dépasser 8 caractères");
-  }
-
-  if (!dateDepart) {
-    errors.push("La date de départ est obligatoire");
-  } else if (dateDepart < today) {
-    errors.push("La date de départ ne peut pas être dans le passé");
-  }
-
-  if (!dateRetour) {
-    errors.push("La date de retour est obligatoire");
-  } else if (dateRetour <= dateDepart) {
-    errors.push("La date de retour doit être après la date de départ");
-  }
-
-  if (!typeTransport) {
-    errors.push("Le type de transport est obligatoire");
-  }
-
-  if (!locationVoiture) {
-    errors.push("La location de voiture est obligatoire");
-  }
-
-  if (!besoinParking) {
-    errors.push("Le besoin de parking est obligatoire");
-  }
-
-  if (!idHotel) {
-    errors.push("La sélection d'un hôtel est obligatoire");
-  }
-
-  // Display errors or submit
-  if (errors.length > 0) {
-    errorMessage.innerHTML = errors.join('<br>');
-    errorMessage.classList.remove('d-none');
-    return false;
-  }
-  return true;
+// Fonction pour afficher les messages de feedback
+function showFeedback(elementId, message, isError) {
+    const feedbackElement = document.getElementById(elementId);
+    feedbackElement.textContent = message;
+    feedbackElement.className = 'form-feedback ' + (isError ? 'error' : 'success');
 }
 
-  </script>
- <div id="custom-message" class="message-hidden">✅ Plan de vacances créé avec succès !</div>
+// Fonctions de validation individuelles
+function validateNom() {
+    const nom = document.getElementById('nom_utilisateur').value.trim();
+    if (!nom) {
+        showFeedback('nomFeedback', 'Le nom est requis', true);
+        return false;
+    } else if (nom.length > 8) {
+        showFeedback('nomFeedback', 'Max 8 caractères', true);
+        return false;
+    }
+    showFeedback('nomFeedback', 'Valide', false);
+    return true;
+}
 
-<script>
-  <?php if ($showSuccessMessage): ?>
-    window.addEventListener('DOMContentLoaded', () => {
-      const messageBox = document.getElementById('custom-message');
-      messageBox.classList.remove('message-hidden');
-      messageBox.classList.add('message-shown');
+function validateIdentifiant() {
+    const identifiant = document.getElementById('identifiant').value.trim();
+    const regex = /^[a-zA-Z0-9]+$/; // Seulement lettres et chiffres
+    
+    if (!identifiant) {
+        showFeedback('identifiantFeedback', 'L\'identifiant est requis', true);
+        return false;
+    } else if (identifiant.length > 8) {
+        showFeedback('identifiantFeedback', 'Max 8 caractères', true);
+        return false;
+    } else if (!regex.test(identifiant)) {
+        showFeedback('identifiantFeedback', 'Caractères spéciaux non autorisés', true);
+        return false;
+    }
+    showFeedback('identifiantFeedback', 'Valide', false);
+    return true;
+}
 
-      setTimeout(() => {
-        window.location.href = 'about.php';
-      }, 2500);
+function validateDates() {
+    const today = new Date().toISOString().split('T')[0];
+    const depart = document.getElementById('date_depart').value;
+    const retour = document.getElementById('date_retour').value;
+    let isValid = true;
+
+    if (!depart) {
+        showFeedback('dateDepartFeedback', 'Date requise', true);
+        isValid = false;
+    } else if (depart < today) {
+        showFeedback('dateDepartFeedback', 'Date dans le passé', true);
+        isValid = false;
+    } else {
+        showFeedback('dateDepartFeedback', 'Valide', false);
+    }
+
+    if (!retour) {
+        showFeedback('dateRetourFeedback', 'Date requise', true);
+        isValid = false;
+    } else if (retour <= depart) {
+        showFeedback('dateRetourFeedback', 'Doit être après départ', true);
+        isValid = false;
+    } else {
+        showFeedback('dateRetourFeedback', 'Valide', false);
+    }
+
+    return isValid;
+}
+
+function validateTransport() {
+    const transport = document.getElementById('type_transport').value;
+    if (!transport) {
+        showFeedback('transportFeedback', 'Sélection requise', true);
+        return false;
+    }
+    showFeedback('transportFeedback', 'Valide', false);
+    return true;
+}
+
+function validateHotel() {
+    const hotel = document.getElementById('id_hotel').value;
+    if (!hotel) {
+        showFeedback('hotelFeedback', 'Sélection requise', true);
+        return false;
+    }
+    showFeedback('hotelFeedback', 'Valide', false);
+    return true;
+}
+
+function validateRadio(fieldName, feedbackId) {
+    const selected = document.querySelector(`input[name="${fieldName}"]:checked`);
+    if (!selected) {
+        showFeedback(feedbackId, 'Sélection requise', true);
+        return false;
+    }
+    showFeedback(feedbackId, 'Valide', false);
+    return true;
+}
+
+// Validation globale
+function validateForm(event) {
+    event.preventDefault();
+    
+    const isNomValid = validateNom();
+    const isIdentifiantValid = validateIdentifiant(); 
+    const areDatesValid = validateDates();
+    const isTransportValid = validateTransport();
+    const isHotelValid = validateHotel();
+    const isLocationValid = validateRadio('location_voiture', 'locationFeedback');
+    const isParkingValid = validateRadio('besoin_parking', 'parkingFeedback');
+
+    if (isNomValid && isIdentifiantValid && areDatesValid && isTransportValid && 
+        isHotelValid && isLocationValid && isParkingValid) {
+        var myModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        myModal.show();
+    }
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation en temps réel
+    document.getElementById('nom_utilisateur').addEventListener('input', validateNom);
+    document.getElementById('identifiant').addEventListener('input', validateIdentifiant);
+    document.getElementById('date_depart').addEventListener('change', validateDates);
+    document.getElementById('date_retour').addEventListener('change', validateDates);
+    document.getElementById('type_transport').addEventListener('change', validateTransport);
+    document.getElementById('id_hotel').addEventListener('change', validateHotel);
+    
+    // Gestion des radios
+    document.querySelectorAll('input[name="location_voiture"]').forEach(radio => {
+        radio.addEventListener('change', () => validateRadio('location_voiture', 'locationFeedback'));
     });
-  <?php endif; ?>
+    document.querySelectorAll('input[name="besoin_parking"]').forEach(radio => {
+        radio.addEventListener('change', () => validateRadio('besoin_parking', 'parkingFeedback'));
+    });
+
+    // Soumission du formulaire
+    document.getElementById('vacationForm').addEventListener('submit', validateForm);
+
+    // Confirmation
+    document.getElementById('confirmSubmit').addEventListener('click', function() {
+        document.getElementById('vacationForm').submit();
+    });
+});
+
+<?php if ($showSuccessMessage): ?>
+    window.addEventListener('DOMContentLoaded', () => {
+        var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+    });
+<?php endif; ?>
 </script>
-
-
 
 </body>
 
