@@ -22,9 +22,11 @@
   
   <style>
    :root {
-  --primary-dark: #0a1d37;
-  --accent-blue: #ec1462; 
-}
+      --primary-dark: #0f172a;
+      --accent-blue: #3b82f6;
+      --accent-pink: #ec4899;
+      --gradient-primary: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
+    }
 
     
     body {
@@ -289,6 +291,11 @@
         grid-template-columns: 1fr;
       }
     }
+    .bg-gradient-blue {
+  background: linear-gradient(87deg, #1e3c72 0%, #2a5298 100%);
+  color: white !important;
+}
+
   </style>
 </head>
 
@@ -319,10 +326,11 @@
         </li>
         <!-- Vacances Menu with Submenu -->
         <li class="nav-item has-submenu">
-          <a class="nav-link active bg-rose text-white" href="javascript:;">
-            <i class="material-symbols-rounded opacity-5">directions_bus</i>
-            <span class="nav-link-text ms-1">Vacances</span>
-          </a>
+        <a class="nav-link active bg-gradient-blue text-white" href="javascript:;">
+  <i class="material-symbols-rounded opacity-5">directions_bus</i>
+  <span class="nav-link-text ms-1">Vacances</span>
+</a>
+
           <div class="submenu">
             <a href="addHotel.php" class="submenu-item">
               <i class="fas fa-hotel"></i>
@@ -432,8 +440,8 @@
         $planController = new PlanVacanceC();
 
         // Get counts from database
-        $hotelCount = $hotelController->listHotels()->rowCount();
-        $planCount = $planController->listPlans()->rowCount();
+        $hotelCount = count($hotelController->listHotels()); // Compte les hôtels
+        $planCount = count($planController->listPlans()); 
 
         // Calculate percentage changes (you would need to implement these methods)
         $hotelChange = calculateHotelChange(); // Implement this function

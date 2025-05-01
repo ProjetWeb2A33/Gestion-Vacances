@@ -3,15 +3,13 @@ require __DIR__ . '/../config.php';
 
 class HotelC
 {
-    public function listHotels()
-    {
+    public function listHotels() {
         $sql = "SELECT * FROM hotel";
         $db = config::getConnexion();
         try {
-            $liste = $db->query($sql);
-            return $liste;
+            return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC); // Retourne un tableau associatif
         } catch (Exception $e) {
-            die('Error:' . $e->getMessage());
+            die('Error: ' . $e->getMessage());
         }
     }
 
@@ -99,4 +97,17 @@ class HotelC
             $e->getMessage();
         }
     }
+
+public function searchHotelsByName($name) {
+    $sql = "SELECT * FROM hotel WHERE nom_hotel LIKE :name";
+    $db = config::getConnexion();
+    try {
+        $query = $db->prepare($sql);
+        $query->execute(['name' => '%' . $name . '%']);
+        return $query->fetchAll(PDO::FETCH_ASSOC); // Retourne un tableau associatif
+    } catch (PDOException $e) {
+        error_log('Search error: ' . $e->getMessage()); // Log l'erreur pour le débogage
+        return []; // Retourne un tableau vide en cas d'erreur
+    }
+}
 }

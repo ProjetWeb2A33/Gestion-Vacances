@@ -10,22 +10,16 @@ $search = isset($_GET['search']) ? $_GET['search'] : ''; // Get search value fro
 
 // If search value is provided, filter the results
 if (!empty($search)) {
-    // Call the search function in PlanVacanceC to search by identifiant
-    $stmt = $c->searchPlansByIdentifiant($search);
+    $tab = $c->searchPlansByIdentifiant($search); // Retourne un tableau
 } else {
-    // If no search, fetch all plans
-    $stmt = $c->listPlans();
+    $tab = $c->listPlans(); // Retourne un tableau
 }
-
-// Fetch all results as an array
-$tab = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Check if sort request is made
 if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
-    // Sort the array by date_depart
-    usort($tab, function($a, $b) {
-        return strtotime($a['date_depart']) - strtotime($b['date_depart']);
-    });
+  usort($tab, function($a, $b) {
+      return strtotime($a['date_depart']) - strtotime($b['date_depart']);
+  });
 }
 ?>
 
@@ -38,6 +32,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
   <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="assets/img/easyparki.png">
   <title>EasyParki - Plans de Vacance</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Fonts and icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
@@ -50,7 +45,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
   
   <style>
-       :root {
+    :root {
       --primary-dark: #0a1d37;
       --accent-blue: #4da6ff;
     }
@@ -103,6 +98,40 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       font-size: 18px;
     }
 
+    .form-container {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin: 30px auto;
+      max-width: 600px;
+    }
+    
+    
+    .nav-item.has-submenu:hover .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .submenu-item {
+      padding: 12px 20px;
+      color: white !important;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    
+    .submenu-item:hover {
+      background: rgba(255,255,255,0.1);
+      padding-left: 25px;
+    }
+    
+    .submenu-item i {
+      margin-right: 12px;
+      font-size: 18px;
+    }
 
     .form-container {
       background: white;
@@ -123,7 +152,13 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
     .sidenav .material-symbols-rounded {
       color: white !important;
     }
+    
+    .error-message {
+      color: red;
+      margin-bottom: 15px;
+    }
 
+    
     .custom-table {
       background: white;
       border-radius: 12px;
@@ -141,6 +176,19 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       vertical-align: middle;
       padding: 1rem;
     }
+
+    .bg-gradient-primary {
+        background: linear-gradient(195deg, #EC407A 0%, #D81B60 100%);
+        border: none;
+    }
+
+    .bg-gradient-primary:hover {
+        background: linear-gradient(195deg, #D81B60 0%, #EC407A 100%);
+    }
+    .bg-gradient-blue {
+  background: linear-gradient(87deg, #1e3c72 0%, #2a5298 100%);
+  color: white !important;
+}
 
     /* PDF Export Button Styles */
     .pdf-export-btn {
@@ -185,35 +233,29 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
     
     /* Sort Button Styles */
     .sort-btn {
-        background: linear-gradient(45deg, #00b09b, #96c93d);
+        background: linear-gradient(45deg,rgb(40, 85, 80),rgb(40, 85, 80));
         border: none;
         border-radius: 50px;
         color: white;
         font-weight: 600;
         letter-spacing: 1px;
-        padding: 12px 24px;
         text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4);
         position: relative;
         overflow: hidden;
         transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        margin-left: 10px;
+        padding: 12px 24px;
+        margin-right: 10px;
     }
     
     .sort-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 176, 155, 0.4);
+        box-shadow: 0 6px 20px rgba(40, 85, 80);
     }
     
     .sort-btn .btn-content {
         position: relative;
         z-index: 1;
-        display: flex;
-        align-items: center;
     }
     
     .sort-btn .btn-effect {
@@ -230,45 +272,80 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
     .sort-btn:hover .btn-effect {
         transform: translateX(0) skewX(-15deg);
     }
-    
-    .sort-btn i {
-        margin-right: 8px;
-        transition: transform 0.3s ease;
+    .custom-title {
+    color:rgb(10, 50, 107) !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+}
+
+.custom-subtitle {
+    color: #000 !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+}
+    /* Button container */
+    .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
     }
     
-    .sort-btn.active i {
-        transform: rotate(180deg);
+    /* Animation for sorting */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
-    .sort-btn.pulse {
-        animation: pulse 1s infinite;
+    .table-row-animate {
+        animation: fadeIn 0.5s ease forwards;
     }
     
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 176, 155, 0.7);
-        }
-        70% {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 10px rgba(0, 176, 155, 0);
-        }
-        100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 176, 155, 0);
-        }
+    /* Rotate icon when sorting */
+    .rotate-icon {
+        animation: rotate 0.5s ease;
     }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .search-btn {
+        background-color:rgb(18, 55, 96); /* Bleu Bootstrap */
+        border-color:rgb(18, 55, 96);
+        color: white;
+    }
+    .search-btn:hover {
+        background-color:rgb(18, 55, 96); /* Bleu un peu plus foncé au survol */
+        border-color:rgb(18, 55, 96);
+    }
+    #statsChartContainer {
+    display: none; /* Masque le conteneur par défaut */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 600px;
+}
   </style>
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 fixed-start" id="sidenav-main">
+  <!-- Sidebar -->
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 fixed-start" id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand px-4 py-3 m-0" href="tables.php">
-  <img src="../assets/img/easyparki.png" class="navbar-brand-img" width="50">
-  <span class="ms-1 text-white">EasyParki</span>
-</a>
+        <img src="../assets/img/easyparki.png" class="navbar-brand-img" width="50">
+        <span class="ms-1 text-white">EasyParki</span>
+      </a>
     </div>
     <hr class="horizontal light mt-0 mb-2">
     <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
@@ -286,10 +363,10 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
           </a>
         </li>
         <li class="nav-item has-submenu">
-          <a class="nav-link active bg-gradient-primary text-white" href="javascript:;">
-            <i class="material-symbols-rounded opacity-5">directions_bus</i>
-            <span class="nav-link-text ms-1">Vacances</span>
-          </a>
+        <a class="nav-link active bg-gradient-blue text-white" href="javascript:;">
+  <i class="material-symbols-rounded opacity-5">directions_bus</i>
+  <span class="nav-link-text ms-1">Vacances</span>
+</a>
           <div class="submenu">
             <a href="addHotel.php" class="submenu-item">
               <i class="fas fa-hotel"></i>
@@ -297,7 +374,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
             </a>
             <a href="addplanVacance.php" class="submenu-item">
               <i class="fas fa-calendar-plus"></i>
-              Ajouter un plan de Vacance
+              Ajouter un plan de Vacances
             </a>
             <a href="listHotels.php" class="submenu-item">
               <i class="fas fa-list"></i>
@@ -365,132 +442,204 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
 
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <div class="container-fluid py-4">
-      <div class="table-responsive custom-table">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2>Liste des Plans de Vacance</h2>
-          <div>
-            <a href="addplanVacance.php" class="btn btn-primary me-2">
-              <i class="fas fa-plus me-2"></i>Ajouter un Plan
-            </a>
-
-          </div>
-        </div>
-        <section class="section">
-  <div class="container" data-aos="fade-up">
-    <div class="row">
-      <div class="col-12">
-        <div class="container" data-aos="fade-up">
-          
-          <!-- Formulaire de recherche -->
-          <div class="search-container mb-4">
-            <form method="GET" class="d-flex w-100">
-              <div class="input-group">
-                <input type="text" 
-                       name="search" 
-                       class="form-control search-input" 
-                       placeholder="Rechercher par identifiant..." 
-                       value="<?= htmlspecialchars($search ?? '') ?>" 
-                       aria-label="Rechercher par identifiant">
-                <button type="submit" class="btn btn-primary search-btn">
-                  <i class="bi bi-search"></i> Rechercher
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Message d'erreur si aucun résultat trouvé -->
-          
-
-          <!-- Affichage des résultats -->
-          <div class="row">
-            <div class="col-12">
-              <table class="vacation-table">
-                <?php if (!empty($plans)): ?>
-                    <!-- Your table structure to show the results -->
-                <?php endif; ?>
-              </table>
-
-            </div>
-          </div>
-        
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-        <table class="table table-striped align-middle">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>identifiant</th>
-              <th>Utilisateur</th>
-              <th>Départ</th>
-              <th>Retour</th>
-              <th>Transport</th>
-              <th>Location voiture</th>
-              <th>Besoin parking</th>
-              <th>Hôtel</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($tab as $plan): 
-              $hotel = $hotelC->showHotel($plan['id_hotel']);
-            ?>
-            <tr>
-              <td><?= $plan['id_plan'] ?></td>
-              <td><?= $plan['identifiant'] ?></td>
-              <td><?= $plan['nom_utilisateur'] ?></td>
-              <td><?= $plan['date_depart'] ?></td>
-              <td><?= $plan['date_retour'] ?></td>
-              <td><?= ucfirst($plan['type_transport']) ?></td>
-              <td><?= ucfirst($plan['location_voiture']) ?></td>
-              <td><?= ucfirst($plan['besoin_parking']) ?></td>
-              <td><?= $hotel['nom_hotel'] ?? 'Inconnu' ?> (<?= $hotel['ville'] ?? '' ?>)</td>
-              <td>
-                <div class="d-flex gap-2">
-                  <form method="POST" action="updateplanVacance.php" class="m-0">
-                    <input type="hidden" name="id" value="<?= $plan['id_plan'] ?>">
-                    <button type="submit" class="btn btn-sm btn-info">
-                      <i class="fas fa-edit"></i> Modifier
-                    </button>
-                  </form>
-                  <a href="deletePlanVacance.php?id=<?= $plan['id_plan'] ?>" class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash"></i> Supprimer
-                  </a>
+        <div class="card shadow-lg">
+            <div class="card-header bg-white border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0 custom-title">Liste des Plans de Vacances</h3>
+                        <p class="mb-0 custom-subtitle">Gestion complète des plans de vacances</p>
+                    </div>
+                    <a href="addplanVacance.php" class="btn" style="background-color: #1a5d1a; color: white; border-radius: 4px; border: none; padding: 10px 20px; font-weight: 500;">
+                        <i class="fas fa-plus me-2"></i>Ajouter un Plan
+                    </a>
                 </div>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-        <button id="exportPdfBtn" class="pdf-export-btn">
-              <span class="btn-content">
-                <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
-              </span>
-              <span class="btn-effect"></span>
-            </button>
-            <a href="?sort=date_depart" class="sort-btn <?= isset($_GET['sort']) ? 'active' : '' ?>">
-              <span class="btn-content">
-                <i class="fas fa-calendar-alt"></i>
-                Trier par Date de Départ
-              </span>
-              <span class="btn-effect"></span>
-            </a>
-      </div>
+            </div>
+            
+            <div class="card-body px-0 pt-0">
+                <!-- Search form -->
+                <div class="px-4 pt-3">
+                    <form method="GET" class="d-flex w-100">
+                        <div class="input-group">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control search-input" 
+                                   placeholder="Rechercher par identifiant..." 
+                                   value="<?= htmlspecialchars($search ?? '') ?>" 
+                                   aria-label="Rechercher par identifiant">
+                                   <button type="submit" class="btn btn-primary search-btn">
+                                  <i class="fas fa-search me-2"></i> Rechercher
+                              </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="plansTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Identifiant</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Utilisateur</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Départ</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Retour</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Transport</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Location</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Parking</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hôtel</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($tab as $plan): 
+                              $hotel = $hotelC->showHotel($plan['id_hotel']);
+                            ?>
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="text-xs font-weight-bold"><?= $plan['id_plan'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-bold"><?= $plan['identifiant'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-normal"><?= $plan['nom_utilisateur'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-bold"><?= $plan['date_depart'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-bold"><?= $plan['date_retour'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-sm" style="background-color: #515b8a; color: white;">
+                                        <?= ucfirst($plan['type_transport']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                <span class="badge badge-sm" style="background-color: <?= $plan['location_voiture'] == 'oui' ? '#1e8449' : '#922b21' ?>; color: white;">
+    <?= ucfirst($plan['location_voiture']) ?>
+</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-sm" style="background-color: <?= $plan['besoin_parking'] == 'oui' ? '#1e8449' : '#922b21' ?>; color: white;">
+                                        <?= ucfirst($plan['besoin_parking']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-normal"><?= $hotel['nom_hotel'] ?? 'Inconnu' ?></span>
+                                    <br>
+                                    <small class="text-xs text-muted"><?= $hotel['ville'] ?? '' ?></small>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <form method="POST" action="updateplanVacance.php" class="m-0">
+                                            <input type="hidden" name="id" value="<?= $plan['id_plan'] ?>">
+                                            <button type="submit" class="btn btn-sm" style="border: 1px solid rgb(155, 32, 62); color:rgb(155, 32, 62); border-radius: 4px; padding: 6px 12px;">
+                                                <i class="fas fa-edit me-1"></i> Modifier
+                                            </button>
+                                        </form>
+                                        <a href="deletePlanVacance.php?id=<?= $plan['id_plan'] ?>" 
+                                           onclick="confirmDelete(event, <?= $plan['id_plan'] ?>)" 
+                                           class="btn btn-sm" style="border: 1px solid #28a745; color: #28a745; border-radius: 4px; padding: 6px 12px;">
+                                            <i class="fas fa-trash me-1"></i> Supprimer
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-white border-0 pt-4 pb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="?sort=date_depart" class="btn btn-sm" style="border: 1px solid #0056b3; color: #0056b3; border-radius: 4px; padding: 6px 12px; margin-right: 10px;">
+                            <i class="fas fa-calendar-alt me-1"></i> Trier par Date
+                        </a>
+                        <button id="exportPdfBtn" class="btn btn-sm" style="border: 1px solid #6c757d; color: #6c757d; border-radius: 4px; padding: 6px 12px;">
+                            <i class="fas fa-file-pdf me-1"></i> Exporter en PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <div id="statsButtonContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="statsButton" class="btn btn-primary" style="border-radius: 50%; width: 60px; height: 60px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);">
+        <i class="fas fa-chart-bar"></i>
+    </button>
+    <div class="card shadow-lg mt-4">
+    <div id="statsChartContainer">
+    <div class="card shadow-lg">
+        <div class="card-header bg-white">
+            <h5 class="card-title">Statistiques des Plans de Vacances</h5>
+            <button onclick="closeStats()" class="btn btn-danger btn-sm" style="float: right;">Fermer</button>
+        </div>
+        <div class="card-body">
+            <canvas id="barChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
+</div>
+</div>
   </main>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
   <script src="../assets/js/bootstrap.min.js"></script>
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
-  <!-- PDF Export Libraries -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   
   <script>
+    // Delete confirmation function
+    function confirmDelete(event, id) {
+        event.preventDefault();
+        
+        const modal = `
+            <div class="modal-overlay" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            ">
+                <div class="modal-content" style="
+                    background: white;
+                    padding: 25px;
+                    border-radius: 10px;
+                    width: 400px;
+                    max-width: 90%;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    text-align: center;
+                ">
+                    <h4 style="margin-top: 0">Confirmer la suppression</h4>
+                    <p>Êtes-vous sûr de vouloir supprimer ce plan de vacances ?</p>
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+                        <button onclick="this.closest('.modal-overlay').remove()" 
+                                class="btn btn-secondary" 
+                                style="padding: 8px 20px">
+                            Annuler
+                        </button>
+                        <a href="deletePlanVacance.php?id=${id}" 
+                           class="btn btn-primary" 
+                           style="padding: 8px 20px; background-color: #4da6ff; border-color: #4da6ff;">
+                           <i class="fas fa-check me-2"></i>Confirmer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modal);
+    }
+
     // PDF Export Functionality
     document.addEventListener('DOMContentLoaded', function() {
         const { jsPDF } = window.jspdf;
@@ -506,18 +655,18 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
             const headers = [];
             const rows = [];
             
-            // Get headers (skip Actions column - last column)
-            document.querySelectorAll('.custom-table thead th').forEach((th, index) => {
-                if (index < 9) { // Only take first 9 columns (skip Actions)
+            // Get headers (skip Actions column)
+            document.querySelectorAll('#plansTable thead th').forEach((th, index) => {
+                if (index < 9) { // Only take first 9 columns
                     headers.push(th.textContent.trim());
                 }
             });
             
             // Get rows data
-            document.querySelectorAll('.custom-table tbody tr').forEach(tr => {
+            document.querySelectorAll('#plansTable tbody tr').forEach(tr => {
                 const row = [];
                 tr.querySelectorAll('td').forEach((td, index) => {
-                    if (index < 9) { // Only take first 9 columns (skip Actions)
+                    if (index < 9) { // Only take first 9 columns
                         row.push(td.textContent.trim());
                     }
                 });
@@ -541,9 +690,6 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                     
                     <?php if (!empty($search)): ?>
                     doc.text('Recherche: "' + <?= json_encode($search) ?> + '"', 40, 75);
-                    doc.autoTable({
-                        startY: 90
-                    });
                     <?php endif; ?>
                     
                     // Add table if data exists
@@ -551,7 +697,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                         doc.autoTable({
                             head: [headers],
                             body: rows,
-                            startY: <?php echo !empty($search) ? 90 : 80 ?>,
+                            startY: <?php echo !empty($search) ? 80 : 70 ?>,
                             theme: 'grid',
                             headStyles: {
                                 fillColor: [74, 0, 224],
@@ -561,9 +707,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                             alternateRowStyles: {
                                 fillColor: [240, 240, 240]
                             },
-                            margin: { left: 40 },
-                            pageBreak: 'auto',
-                            tableWidth: 'wrap'
+                            margin: { left: 40 }
                         });
                     } else {
                         doc.setFontSize(12);
@@ -583,77 +727,105 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                 }
             }, 100);
         });
-
-        // Delete confirmation function
-        function confirmDelete(event, id) {
-            event.preventDefault();
-            
-            const modal = `
-                <div class="modal-overlay" style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0,0,0,0.5);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 1000;
-                ">
-                    <div class="modal-content" style="
-                        background: white;
-                        padding: 25px;
-                        border-radius: 10px;
-                        width: 400px;
-                        max-width: 90%;
-                        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-                        text-align: center;
-                    ">
-                        <h4 style="margin-top: 0">Confirmer la suppression</h4>
-                        <p>Êtes-vous sûr de vouloir supprimer ce plan de vacances ?</p>
-                        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
-                            <button onclick="this.closest('.modal-overlay').remove()" 
-                                    class="btn btn-secondary" 
-                                    style="padding: 8px 20px">
-                                Annuler
-                            </button>
-                            <a href="deletePlanVacance.php?id=${id}" 
-                               class="btn btn-danger" 
-                               style="padding: 8px 20px">
-                                Confirmer
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', modal);
-        }
-
-        // Attach delete confirmation to all delete buttons
-        document.querySelectorAll('a[href*="deletePlanVacance.php"]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const id = this.getAttribute('href').split('id=')[1];
-                confirmDelete(e, id);
-            });
-        });
-        
-        // Add animation to sort button when clicked
-        const sortBtn = document.querySelector('.sort-btn');
-        if (sortBtn) {
-            sortBtn.addEventListener('click', function(e) {
-                // Add pulse animation
-                this.classList.add('pulse');
-                
-                // Remove animation after 1 second
-                setTimeout(() => {
-                    this.classList.remove('pulse');
-                }, 1000);
-            });
-        }
     });
+    document.addEventListener('DOMContentLoaded', function () {
+    const statsButton = document.getElementById('statsButton');
+    const statsChartContainer = document.getElementById('statsChartContainer');
+    const ctx = document.getElementById('barChart').getContext('2d');
+    let chartInstance; // Pour stocker l'instance du graphique
+
+    // Fonction pour calculer les statistiques
+    function calculateStats() {
+        const rows = document.querySelectorAll('#plansTable tbody tr');
+        const stats = {};
+
+        rows.forEach(row => {
+            const transport = row.querySelector('td:nth-child(6) span').textContent.trim(); // Colonne Transport
+            if (!stats[transport]) {
+                stats[transport] = 0;
+            }
+            stats[transport]++;
+        });
+
+        return stats;
+    }
+
+    // Fonction pour afficher le graphique
+    function showStats() {
+        statsChartContainer.style.display = 'block'; // Affiche le conteneur
+
+        const stats = calculateStats();
+        const labels = Object.keys(stats); // Les types de transport
+        const data = Object.values(stats); // Le nombre de plans par type de transport
+
+        // Si un graphique existe déjà, le détruire avant d'en créer un nouveau
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        // Créer le graphique en bâtons
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nombre de Plans par Type de Transport',
+                    data: data,
+                    backgroundColor: [
+                        '#1E88E5', // Bleu clair
+                        '#1565C0', // Bleu moyen
+                        '#0D47A1', // Bleu foncé
+                        '#42A5F5', // Bleu pastel
+                        '#90CAF9'  // Bleu très clair
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.label}: ${context.raw} plans`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Type de Transport'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Nombre de Plans'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Fonction pour masquer le graphique
+    function closeStats() {
+        statsChartContainer.style.display = 'none'; // Masque le conteneur
+    }
+
+    // Ajouter un événement au bouton pour afficher les statistiques
+    statsButton.addEventListener('click', showStats);
+
+    // Rendre la fonction de fermeture accessible globalement
+    window.closeStats = closeStats;
+});
   </script>
 </body>
 </html>

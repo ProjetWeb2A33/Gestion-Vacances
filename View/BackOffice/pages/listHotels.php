@@ -1,7 +1,14 @@
 <?php
 include "../../../controller/HotelC.php";
 $c = new HotelC();
-$tab = $c->listHotels();
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+
+// Si une recherche est effectuée
+if (!empty($search)) {
+    $tab = $c->searchHotelsByName($search); // Recherche par nom
+} else {
+    $tab = $c->listHotels(); // Retourne tous les hôtels
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -12,9 +19,10 @@ $tab = $c->listHotels();
   <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="assets/img/easyparki.png">
   <title>EasyParki - Hotels List</title>
-  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <!-- Fonts and icons -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
   <link href="assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="assets/css/nucleo-svg.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
@@ -27,40 +35,11 @@ $tab = $c->listHotels();
     :root {
       --primary-dark: #0a1d37;
       --accent-blue: #4da6ff;
-      --gradient-primary: linear-gradient(195deg, #EC407A 0%, #D81B60 100%);
-      --gradient-secondary: linear-gradient(45deg, #4a00e0, #8e2de2);
-      --gradient-success: linear-gradient(45deg, #00b09b, #96c93d);
     }
     
     body {
       background-color: #f8f9fa !important;
-      font-family: 'Inter', sans-serif;
     }
-
-    /* Sidebar Enhancements */
-    .sidenav {
-      background-color: var(--primary-dark) !important;
-      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
-    }
-    
-    .sidenav .nav-link,
-    .sidenav .nav-link-text,
-    .sidenav .navbar-brand span,
-    .sidenav .material-symbols-rounded {
-      color: white !important;
-      transition: all 0.3s ease;
-    }
-    
-    .sidenav .nav-link:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateX(5px);
-    }
-    
-    .sidenav .navbar-brand {
-      padding: 1rem 1.5rem;
-    }
-    
-    /* Submenu Enhancements */
     .nav-item.has-submenu {
       position: relative;
     }
@@ -69,17 +48,16 @@ $tab = $c->listHotels();
       position: absolute;
       left: 0;
       top: 100%;
-      min-width: 240px;
+      min-width: 220px;
       background: var(--primary-dark);
       border-radius: 8px;
       padding: 10px 0;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      transition: all 0.3s ease;
       transform: translateY(-10px);
       z-index: 1000;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
     
     .nav-item.has-submenu:hover .submenu {
@@ -89,353 +67,245 @@ $tab = $c->listHotels();
     }
     
     .submenu-item {
-      padding: 12px 24px;
+      padding: 12px 20px;
       color: white !important;
       text-decoration: none;
       display: flex;
       align-items: center;
-      transition: all 0.3s ease;
-      font-weight: 500;
+      transition: all 0.2s ease;
     }
     
     .submenu-item:hover {
-      background: rgba(255,255,255,0.15);
-      padding-left: 28px;
+      background: rgba(255,255,255,0.1);
+      padding-left: 25px;
     }
     
     .submenu-item i {
       margin-right: 12px;
-      font-size: 16px;
-      width: 20px;
-      text-align: center;
+      font-size: 18px;
     }
 
-    /* Main Content Styling */
-    .main-content {
-      background-color: #f5f7fa;
+    .form-container {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin: 30px auto;
+      max-width: 600px;
     }
     
-    .container-fluid {
-      padding: 2rem;
+    
+    .nav-item.has-submenu:hover .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
     
-    /* Table Enhancements */
+    .submenu-item {
+      padding: 12px 20px;
+      color: white !important;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    
+    .submenu-item:hover {
+      background: rgba(255,255,255,0.1);
+      padding-left: 25px;
+    }
+    
+    .submenu-item i {
+      margin-right: 12px;
+      font-size: 18px;
+    }
+
+    .form-container {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin: 30px auto;
+      max-width: 600px;
+    }
+    
+    .sidenav {
+      background-color: var(--primary-dark) !important;
+    }
+    
+    .sidenav .nav-link,
+    .sidenav .nav-link-text,
+    .sidenav .navbar-brand span,
+    .sidenav .material-symbols-rounded {
+      color: white !important;
+    }
+    
+    .error-message {
+      color: red;
+      margin-bottom: 15px;
+    }
+
+    
     .custom-table {
       background: white;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 6px 30px rgba(0,0,0,0.05);
-      border: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
     
     .custom-table th {
-      background-color: var(--primary-dark) !important;
+      background-color: var(--accent-blue) !important;
       color: white !important;
-      padding: 1.25rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.5px;
+      padding: 1rem;
     }
     
     .custom-table td {
       vertical-align: middle;
-      padding: 1.25rem;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    
-    .custom-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .custom-table tr:hover td {
-      background-color: #f9f9f9;
+      padding: 1rem;
     }
 
-    /* Header Styling */
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding: 0 0.5rem;
-    }
-    
-    .table-header h2 {
-      color: var(--primary-dark);
-      font-weight: 700;
-      margin: 0;
-      font-size: 1.75rem;
+    .bg-gradient-primary {
+        background: linear-gradient(195deg, #EC407A 0%, #D81B60 100%);
+        border: none;
     }
 
-    /* Button Styling */
-    .btn-primary {
-      background: var(--gradient-primary);
-      border: none;
-      box-shadow: 0 4px 15px rgba(216, 27, 96, 0.3);
-      transition: all 0.3s ease;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      padding: 0.75rem 1.5rem;
+    .bg-gradient-primary:hover {
+        background: linear-gradient(195deg, #D81B60 0%, #EC407A 100%);
     }
-    
-    .btn-primary:hover {
-      background: linear-gradient(195deg, #D81B60 0%, #EC407A 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(216, 27, 96, 0.4);
-    }
-    
-    .btn-info {
-      background: linear-gradient(45deg, #00c6ff, #0072ff);
-      border: none;
-      color: white;
-      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
-    }
-    
-    .btn-danger {
-    background-color: red;
-    color: white;
-    border: none;
+    .bg-gradient-blue {
+  background: linear-gradient(87deg, #1e3c72 0%, #2a5298 100%);
+  color: white !important;
 }
 
-    .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-      display: flex;
-      gap: 0.75rem;
-    }
-    
-    .action-buttons .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      min-width: 90px;
-    }
-
-    /* PDF Export Button */
+    /* PDF Export Button Styles */
     .pdf-export-btn {
-      background: var(--gradient-secondary);
-      border: none;
-      border-radius: 50px;
-      color: white;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      box-shadow: 0 4px 15px rgba(74, 0, 224, 0.3);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      padding: 0.75rem 1.5rem;
+        background: linear-gradient(45deg, #4a00e0, #8e2de2);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 15px rgba(74, 0, 224, 0.4);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        padding: 12px 24px;
     }
     
     .pdf-export-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(74, 0, 224, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(74, 0, 224, 0.6);
     }
     
     .pdf-export-btn .btn-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+        position: relative;
+        z-index: 1;
     }
     
     .pdf-export-btn .btn-effect {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.2);
-      transform: translateX(-100%) skewX(-15deg);
-      transition: all 0.6s ease;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.2);
+        transform: translateX(-100%) skewX(-15deg);
+        transition: all 0.6s ease;
     }
     
     .pdf-export-btn:hover .btn-effect {
-      transform: translateX(0) skewX(-15deg);
+        transform: translateX(0) skewX(-15deg);
     }
     
-    /* Sort Button */
+    /* Sort Button Styles */
     .sort-btn {
-      background: var(--gradient-success);
-      border: none;
-      border-radius: 50px;
-      color: white;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      padding: 0.75rem 1.5rem;
+        background: linear-gradient(45deg, #00b09b, #96c93d);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        padding: 12px 24px;
+        margin-right: 10px;
     }
     
     .sort-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 176, 155, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6);
     }
     
     .sort-btn .btn-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+        position: relative;
+        z-index: 1;
     }
     
     .sort-btn .btn-effect {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.2);
-      transform: translateX(-100%) skewX(-15deg);
-      transition: all 0.6s ease;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.2);
+        transform: translateX(-100%) skewX(-15deg);
+        transition: all 0.6s ease;
     }
     
     .sort-btn:hover .btn-effect {
-      transform: translateX(0) skewX(-15deg);
+        transform: translateX(0) skewX(-15deg);
     }
-    
+    .custom-title {
+    color:rgb(10, 50, 107) !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+}
+
+.custom-subtitle {
+    color: #000 !important;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+}
     /* Button container */
     .button-container {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      margin-top: 2.5rem;
-      flex-wrap: wrap;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
     }
     
-    /* Animations */
+    /* Animation for sorting */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     .table-row-animate {
-      animation: fadeIn 0.5s ease forwards;
+        animation: fadeIn 0.5s ease forwards;
     }
     
     /* Rotate icon when sorting */
     .rotate-icon {
-      animation: rotate 0.5s ease;
+        animation: rotate 0.5s ease;
     }
     
     @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .table-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-      }
-      
-      .button-container {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      
-      .action-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      
-      .action-buttons .btn {
-        width: 100%;
-      }
+    .search-btn {
+        background-color:rgb(18, 55, 96); /* Bleu Bootstrap */
+        border-color:rgb(18, 55, 96);
+        color: white;
     }
-    
-    /* Modal Enhancements */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1050;
-      backdrop-filter: blur(5px);
-    }
-    
-    .modal-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      width: 450px;
-      max-width: 95%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      text-align: center;
-      animation: modalFadeIn 0.3s ease-out;
-    }
-    
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .modal-content h4 {
-      margin-top: 0;
-      color: var(--primary-dark);
-      font-weight: 700;
-    }
-    
-    .modal-content p {
-      color: #666;
-      margin-bottom: 1.5rem;
-    }
-    
-    .modal-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    
-    .modal-buttons .btn {
-      min-width: 100px;
-      padding: 0.75rem;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-    
-    .modal-buttons .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
-    }
-    
-    .modal-buttons .btn-secondary:hover {
-      background: #e0e0e0;
-    }
-    
-    .modal-buttons .btn-danger {
-      background: var(--gradient-danger);
-      color: white;
-    }
-    
-    /* Loading spinner */
-    .fa-spinner {
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .search-btn:hover {
+        background-color:rgb(18, 55, 96); /* Bleu un peu plus foncé au survol */
+        border-color:rgb(18, 55, 96);
     }
   </style>
 </head>
@@ -447,7 +317,7 @@ $tab = $c->listHotels();
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand px-4 py-3 m-0" href="tables.php">
         <img src="../assets/img/easyparki.png" class="navbar-brand-img" width="50">
-        <span class="ms-1 text-white font-weight-bold">EasyParki</span>
+        <span class="ms-1 text-white">EasyParki</span>
       </a>
     </div>
     <hr class="horizontal light mt-0 mb-2">
@@ -466,10 +336,10 @@ $tab = $c->listHotels();
           </a>
         </li>
         <li class="nav-item has-submenu">
-          <a class="nav-link active bg-gradient-primary text-white" href="javascript:;">
-            <i class="material-symbols-rounded opacity-5">directions_bus</i>
-            <span class="nav-link-text ms-1">Vacances</span>
-          </a>
+        <a class="nav-link active bg-gradient-blue text-white" href="javascript:;">
+  <i class="material-symbols-rounded opacity-5">directions_bus</i>
+  <span class="nav-link-text ms-1">Vacances</span>
+</a>
           <div class="submenu">
             <a href="addHotel.php" class="submenu-item">
               <i class="fas fa-hotel"></i>
@@ -543,78 +413,254 @@ $tab = $c->listHotels();
     </div>
   </aside>
 
-  <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <div class="container-fluid py-4">
-      <div class="table-responsive custom-table">
-        <div class="table-header">
-          <h2>Liste des Hôtels</h2>
-          <a href="addHotel.php" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Ajouter Hôtel
-          </a>
-        </div>
-        
-        <table class="table table-striped align-middle" id="hotelsTable">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nom</th>
-              <th>Adresse</th>
-              <th>Ville</th>
-              <th>Places parking</th>
-              <th>Places disponibles</th>
-              <th>Catégorie</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($tab as $hotel): ?>
-            <tr>
-              <td><?= htmlspecialchars($hotel['id_hotel']) ?></td>
-              <td><?= htmlspecialchars($hotel['nom_hotel']) ?></td>
-              <td><?= htmlspecialchars($hotel['adresse']) ?></td>
-              <td><?= htmlspecialchars($hotel['ville']) ?></td>
-              <td><?= htmlspecialchars($hotel['nombre_places_parking']) ?></td>
-              <td><?= htmlspecialchars($hotel['places_parking_disponibles']) ?></td>
-              <td><?= htmlspecialchars($hotel['categorie']) ?></td>
-              <td>
-                <div class="action-buttons">
-                  <form method="POST" action="updateHotel.php" class="m-0">
-                    <input type="hidden" name="id" value="<?= $hotel['id_hotel'] ?>">
-                    <button type="submit" class="btn btn-sm btn-info">
-                      <i class="fas fa-edit"></i> Modifier
-                    </button>
-                  </form>
-                  <a href="deleteHotel.php?id=<?= $hotel['id_hotel'] ?>" 
-                     onclick="confirmDelete(event, <?= $hotel['id_hotel'] ?>)" 
-                     class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash"></i> Supprimer
-                  </a>
+        <div class="card shadow-lg">
+            <div class="card-header bg-white border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                <div>
+    <h3 class="mb-0 custom-title">Liste des Hôtels</h3>
+    <p class="mb-0 custom-subtitle">Gestion complète des hôtels partenaires</p>
+</div>
+<a href="addHotel.php" class="btn" style="background-color: #1a5d1a; color: white; border-radius: 4px; border: none; padding: 10px 20px; font-weight: 500;">
+    <i class="fas fa-plus me-2"></i>Ajouter un Hôtel
+</a>
                 </div>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-        
-        <!-- Buttons Container -->
-        <div class="button-container">
-          <button id="sortByNameBtn" class="sort-btn">
-            <span class="btn-content">
-              <i class="fas fa-sort-alpha-down me-2" id="sortIcon"></i> Trier par Nom
-            </span>
-            <span class="btn-effect"></span>
-          </button>
-          
-          <button id="exportPdfBtn" class="pdf-export-btn">
-            <span class="btn-content">
-              <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
-            </span>
-            <span class="btn-effect"></span>
-          </button>
+            </div>
+            <!-- Formulaire de recherche -->
+          <div class="px-4 pt-3">
+            <form method="GET" class="d-flex w-100">
+              <div class="input-group">
+                <input type="text" 
+                       name="search" 
+                       class="form-control search-input" 
+                       placeholder="Rechercher par nom..." 
+                       value="<?= htmlspecialchars($search) ?>" 
+                       aria-label="Rechercher par nom">
+                <button type="submit" class="btn btn-primary search-btn">
+                  <i class="fas fa-search me-2"></i> Rechercher
+                </button>
+              </div>
+            </form>
+          </div>
+              <tbody>  
+            <div class="card-body px-0 pt-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="hotelsTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nom</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Adresse</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ville</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Places</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Disponibles</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Catégorie</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($tab as $hotel): ?>
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="text-xs font-weight-bold"><?= htmlspecialchars($hotel['id_hotel']) ?></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm"><?= htmlspecialchars($hotel['nom_hotel']) ?></h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-normal"><?= htmlspecialchars($hotel['adresse']) ?></span>
+                                </td>
+                                <td>
+                                <span class="badge badge-sm" style="background-color:rgb(81, 91, 138); color: white;"><?= htmlspecialchars($hotel['ville']) ?></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-xs font-weight-bold"><?= htmlspecialchars($hotel['nombre_places_parking']) ?></span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-xs font-weight-bold <?= $hotel['places_parking_disponibles'] > 0 ? 'text-success' : 'text-danger' ?>">
+                                        <?= htmlspecialchars($hotel['places_parking_disponibles']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?php 
+                                        $categoryClass = [
+                                            'standard' => 'bg-gradient-secondary',
+                                            'premium' => 'bg-gradient-warning',
+                                            'luxe' => 'bg-gradient-success'
+                                        ];
+                                        $defaultClass = 'bg-gradient-primary';
+                                    ?>
+                                    <span class="badge badge-sm" style="background-color: #922b21; color: white;">
+    <?= htmlspecialchars($hotel['categorie']) ?>
+</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <form method="POST" action="updateHotel.php" class="m-0">
+                                            <input type="hidden" name="id" value="<?= $hotel['id_hotel'] ?>">
+                                            <button type="submit" class="btn btn-sm" style="border: 1px solid rgb(155, 32, 62); color:rgb(155, 32, 62); border-radius: 4px; padding: 6px 12px;">
+    <i class="fas fa-edit me-1"></i> Modifier
+</button>
+                                        </form>
+                                        <a href="deleteHotel.php?id=<?= $hotel['id_hotel'] ?>" 
+   onclick="confirmDelete(event, <?= $hotel['id_hotel'] ?>)" 
+   class="btn btn-sm" style="border: 1px solid #28a745; color: #28a745; border-radius: 4px; padding: 6px 12px;">
+    <i class="fas fa-trash me-1"></i> Supprimer
+</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-white border-0 pt-4 pb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                    <button id="sortByNameBtn" class="btn btn-sm" style="border: 1px solid #0056b3; color: #0056b3; border-radius: 4px; padding: 6px 12px; margin-right: 10px;">
+    <i class="fas fa-sort-alpha-down me-1" id="sortIcon"></i> Trier par Nom
+</button>
+
+<button id="exportPdfBtn" class="btn btn-sm" style="border: 1px solid #6c757d; color: #6c757d; border-radius: 4px; padding: 6px 12px;">
+    <i class="fas fa-file-pdf me-1"></i> Exporter en PDF
+</button>
+
+<div id="statsButtonContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="statsButton" class="btn btn-primary" style="border-radius: 50%; width: 60px; height: 60px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);">
+        <i class="fas fa-chart-pie"></i>
+    </button>
+</div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </main>
+</main>
+
+<style>
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+    .card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header {
+        padding: 1.5rem;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table thead th {
+        border-bottom: none;
+        padding: 1rem 1.5rem;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table tbody td {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.04);
+        vertical-align: middle;
+    }
+    
+    .badge {
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .rounded-pill {
+        border-radius: 50px !important;
+    }
+    
+    .btn-outline-info {
+        border-color: #17a2b8;
+        color: #17a2b8;
+    }
+    
+    .btn-outline-info:hover {
+        background-color:rgb(12, 120, 77);
+        color: white;
+    }
+    
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .pagination .page-item .page-link {
+        border-radius: 8px !important;
+        margin: 0 2px;
+        color: #495057;
+        border: none;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .text-xxs {
+        font-size: 0.65rem !important;
+    }
+</style>
+
+<div id="statsModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1001; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background: white; padding: 20px; border-radius: 10px; width: 400px; max-width: 90%; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); text-align: center;">
+        <h4>Statistiques par Catégorie</h4>
+        <canvas id="statsChart" width="400" height="400"></canvas>
+        <button onclick="closeStatsModal()" class="btn btn-secondary" style="margin-top: 20px;">Fermer</button>
+    </div>
+</div>
+
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -629,19 +675,40 @@ $tab = $c->listHotels();
         event.preventDefault();
         
         const modal = `
-            <div class="modal-overlay">
-                <div class="modal-content">
-                    <h4>Confirmer la suppression</h4>
+            <div class="modal-overlay" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            ">
+                <div class="modal-content" style="
+                    background: white;
+                    padding: 25px;
+                    border-radius: 10px;
+                    width: 400px;
+                    max-width: 90%;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    text-align: center;
+                ">
+                    <h4 style="margin-top: 0">Confirmer la suppression</h4>
                     <p>Êtes-vous sûr de vouloir supprimer cet hôtel ?</p>
-                    <div class="modal-buttons">
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
                         <button onclick="this.closest('.modal-overlay').remove()" 
-                                class="btn btn-secondary">
+                                class="btn btn-secondary" 
+                                style="padding: 8px 20px">
                             Annuler
                         </button>
                         <a href="deleteHotel.php?id=${id}" 
-                           class="btn btn-danger">
-                            Confirmer
-                        </a>
+   class="btn btn-primary" 
+   style="padding: 8px 20px; background-color: #4da6ff; border-color: #4da6ff;">
+   <i class="fas fa-check me-2"></i>Confirmer
+</a>
                     </div>
                 </div>
             </div>
@@ -728,14 +795,14 @@ $tab = $c->listHotels();
             const rows = [];
             
             // Get headers (skip Actions column)
-            document.querySelectorAll('.custom-table thead th').forEach((th, index) => {
+            document.querySelectorAll('#hotelsTable thead th').forEach((th, index) => {
                 if (index < 7) { // Only take first 7 columns
                     headers.push(th.textContent.trim());
                 }
             });
             
             // Get rows data
-            document.querySelectorAll('.custom-table tbody tr').forEach(tr => {
+            document.querySelectorAll('#hotelsTable tbody tr').forEach(tr => {
                 const row = [];
                 tr.querySelectorAll('td').forEach((td, index) => {
                     if (index < 7) { // Only take first 7 columns
@@ -751,70 +818,35 @@ $tab = $c->listHotels();
                     const doc = new jsPDF('p', 'pt', 'a4');
                     
                     // Add title
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(20);
-                    doc.setTextColor(10, 29, 55); // Primary dark color
-                    doc.text('Liste des Hôtels - EasyParki', 40, 50);
+                    doc.setFontSize(18);
+                    doc.setTextColor(40);
+                    doc.text('Liste des Hôtels - EasyParki', 40, 40);
                     
                     // Add date
-                    doc.setFont('helvetica', 'normal');
                     doc.setFontSize(10);
                     doc.setTextColor(100);
-                    doc.text('Généré le: ' + new Date().toLocaleDateString('fr-FR'), 40, 70);
-                    
-                    // Add logo
-                    const logo = new Image();
-                    logo.src = '../assets/img/easyparki.png';
-                    doc.addImage(logo, 'PNG', 450, 30, 50, 50);
+                    doc.text('Généré le: ' + new Date().toLocaleDateString(), 40, 60);
                     
                     // Add table if data exists
                     if (rows.length > 0) {
                         doc.autoTable({
                             head: [headers],
                             body: rows,
-                            startY: 90,
+                            startY: 80,
                             theme: 'grid',
                             headStyles: {
-                                fillColor: [10, 29, 55], // Primary dark color
+                                fillColor: [74, 0, 224],
                                 textColor: 255,
-                                fontStyle: 'bold',
-                                fontSize: 10
-                            },
-                            bodyStyles: {
-                                fontSize: 9
+                                fontStyle: 'bold'
                             },
                             alternateRowStyles: {
-                                fillColor: [245, 247, 250] // Light gray
+                                fillColor: [240, 240, 240]
                             },
-                            margin: { left: 40, right: 40 },
-                            styles: {
-                                cellPadding: 8,
-                                overflow: 'linebreak',
-                                halign: 'center'
-                            },
-                            columnStyles: {
-                                0: { halign: 'center', cellWidth: 40 }, // ID
-                                1: { cellWidth: 'auto' }, // Name
-                                2: { cellWidth: 'auto' }, // Address
-                                3: { cellWidth: 'auto' }, // City
-                                4: { halign: 'center', cellWidth: 60 }, // Parking spaces
-                                5: { halign: 'center', cellWidth: 60 }, // Available spaces
-                                6: { halign: 'center', cellWidth: 60 } // Category
-                            }
+                            margin: { left: 40 }
                         });
                     } else {
                         doc.setFontSize(12);
-                        doc.text('Aucun hôtel à afficher', 40, 90);
-                    }
-                    
-                    // Add footer
-                    const pageCount = doc.internal.getNumberOfPages();
-                    for(let i = 1; i <= pageCount; i++) {
-                        doc.setPage(i);
-                        doc.setFontSize(8);
-                        doc.setTextColor(150);
-                        doc.text('Page ' + i + ' sur ' + pageCount, doc.internal.pageSize.width - 50, doc.internal.pageSize.height - 20);
-                        doc.text('© EasyParki ' + new Date().getFullYear(), 40, doc.internal.pageSize.height - 20);
+                        doc.text('Aucun hôtel à afficher', 40, 80);
                     }
                     
                     // Save the PDF
@@ -831,6 +863,82 @@ $tab = $c->listHotels();
             }, 100);
         });
     });
+    document.addEventListener('DOMContentLoaded', function () {
+    const statsButton = document.getElementById('statsButton');
+    const statsModal = document.getElementById('statsModal');
+    const statsChartCanvas = document.getElementById('statsChart');
+    let statsChart; // Variable pour stocker l'instance du graphique
+
+    // Fonction pour calculer les statistiques
+    function calculateStats() {
+        const rows = document.querySelectorAll('#hotelsTable tbody tr');
+        const stats = {};
+
+        rows.forEach(row => {
+            const category = row.querySelector('td:nth-child(7) span').textContent.trim(); // Colonne Catégorie
+            if (!stats[category]) {
+                stats[category] = 0;
+            }
+            stats[category]++;
+        });
+
+        return stats;
+    }
+
+    // Fonction pour afficher les statistiques sous forme de graphique
+    function showStats() {
+        const stats = calculateStats();
+        const categories = Object.keys(stats);
+        const counts = Object.values(stats);
+
+        // Si un graphique existe déjà, le détruire avant d'en créer un nouveau
+        if (statsChart) {
+            statsChart.destroy();
+        }
+
+        // Créer un nouveau graphique
+        statsChart = new Chart(statsChartCanvas, {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    label: 'Nombre d\'hôtels par catégorie',
+                    data: counts,
+                    backgroundColor: [
+    '#1E88E5', // Bleu clair
+    '#1565C0', // Bleu moyen
+    '#0D47A1', // Bleu foncé
+    '#42A5F5', // Bleu pastel
+    '#90CAF9'  // Bleu très clair
+],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        statsModal.style.display = 'flex'; // Afficher la modale
+    }
+
+    // Fonction pour fermer la modale
+    function closeStatsModal() {
+        statsModal.style.display = 'none';
+    }
+
+    // Ajouter un événement au bouton
+    statsButton.addEventListener('click', showStats);
+
+    // Rendre la fonction de fermeture accessible globalement
+    window.closeStatsModal = closeStatsModal;
+});
   </script>
 </body>
 </html>

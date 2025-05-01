@@ -5,12 +5,12 @@ require_once __DIR__ . '/../Controller/HotelC.php';
 
 class PlanVacanceC
 {
-    public function listPlans()
-    {
+    public function listPlans() {
         $sql = "SELECT * FROM plan_vacance";
         $db = config::getConnexion();
         try {
-            return $db->query($sql);
+            $query = $db->query($sql);
+            return $query->fetchAll(PDO::FETCH_ASSOC); // Retourne un tableau associatif
         } catch (Exception $e) {
             die('Error: ' . $e->getMessage());
         }
@@ -127,18 +127,16 @@ class PlanVacanceC
             echo 'Error in updatePlan: ' . $e->getMessage();
         }
     }
-
-    public function searchPlansByIdentifiant($identifiant)
-    {
+    public function searchPlansByIdentifiant($identifiant) {
         $sql = "SELECT * FROM plan_vacance WHERE identifiant LIKE :identifiant";
         $db = config::getConnexion();
-        $stmt = $db->prepare($sql);
-        $stmt->bindValue(':identifiant', '%' . $identifiant . '%');
         try {
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            die('Error: ' . $e->getMessage());
+            $query = $db->prepare($sql);
+            $query->execute(['identifiant' => '%' . $identifiant . '%']);
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('Search error: ' . $e->getMessage()); // Log l'erreur pour le débogage
+            return []; // Retourne un tableau vide en cas d'erreur
         }
     }
 }
