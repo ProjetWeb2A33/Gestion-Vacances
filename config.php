@@ -5,6 +5,7 @@ if (!class_exists('config')) {
     {
         private static $pdo = null;
 
+
         public static function getConnexion()
         {
             if (!isset(self::$pdo)) {
@@ -25,5 +26,6 @@ if (!class_exists('config')) {
             }
             return self::$pdo;
         }
+
     }
 }

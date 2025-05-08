@@ -659,8 +659,8 @@ if (isset($_POST["id"])) {
       if (!nom) {
         showFeedback('nomFeedback', 'Le nom est requis', true);
         return false;
-      } else if (nom.length > 8) {
-        showFeedback('nomFeedback', 'Max 8 caractères', true);
+      } else if (nom.length > 11) {
+        showFeedback('nomFeedback', 'Max 11 caractères', true);
         return false;
       }
       showFeedback('nomFeedback', 'Valide', false);

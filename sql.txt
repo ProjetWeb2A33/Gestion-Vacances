@@ -12,6 +12,7 @@ CREATE TABLE plan_vacance (
     id_plan INT(11) PRIMARY KEY AUTO_INCREMENT,
     identifiant CHAR(36) NOT NULL,
     nom_utilisateur VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     date_depart DATE NOT NULL,
     date_retour DATE NOT NULL,
     type_transport ENUM('voiture', 'taxi', 'bus', 'plane') NOT NULL,

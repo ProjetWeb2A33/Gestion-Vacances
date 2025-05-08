@@ -1,5 +1,5 @@
 <?php
-require_once "../../../Controller/planVacanceC.php"; 
+require_once "../../../Controller/planVacanceC.php";
 require_once __DIR__ . '/../../../Controller/planVacanceC.php';
 
 $c = new PlanVacanceC();
@@ -13,6 +13,34 @@ if (!empty($search)) {
     $tab = $c->searchPlansByIdentifiant($search); // Retourne un tableau
 } else {
     $tab = $c->listPlans(); // Retourne un tableau
+}
+
+// Debug information - will be visible in the HTML source
+echo "<!-- Debug: Number of plans found: " . count($tab) . " -->";
+if (count($tab) > 0) {
+    echo "<!-- Debug: First plan data: " . print_r($tab[0], true) . " -->";
+    echo "<!-- Debug: Available keys: " . implode(', ', array_keys($tab[0])) . " -->";
+} else {
+    // Add visible message if no plans are found
+    echo "<div style='background-color: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 5px;'>
+            <strong>Debug:</strong> No vacation plans found in the database.
+            This message is only visible during development.
+          </div>";
+
+    // Check database connection
+    try {
+        $db = config::getConnexion();
+        $result = $db->query("SELECT COUNT(*) FROM plan_vacance")->fetchColumn();
+        echo "<div style='background-color: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border-radius: 5px;'>
+                <strong>Debug:</strong> Database connection successful. Total records in plan_vacance table: $result
+                This message is only visible during development.
+              </div>";
+    } catch (Exception $e) {
+        echo "<div style='background-color: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 5px;'>
+                <strong>Debug:</strong> Database error: " . $e->getMessage() . "
+                This message is only visible during development.
+              </div>";
+    }
 }
 
 // Check if sort request is made
@@ -33,30 +61,30 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
   <link rel="icon" type="image/png" href="assets/img/easyparki.png">
   <title>EasyParki - Plans de Vacance</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
+
   <!-- Fonts and icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
   <link href="assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="assets/css/nucleo-svg.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  
+
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  
+
   <style>
     :root {
       --primary-dark: #0a1d37;
       --accent-blue: #4da6ff;
     }
-    
+
     body {
       background-color: #f8f9fa !important;
     }
     .nav-item.has-submenu {
       position: relative;
     }
-    
+
     .submenu {
       position: absolute;
       left: 0;
@@ -72,13 +100,13 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       z-index: 1000;
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
-    
+
     .nav-item.has-submenu:hover .submenu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .submenu-item {
       padding: 12px 20px;
       color: white !important;
@@ -87,12 +115,12 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .submenu-item:hover {
       background: rgba(255,255,255,0.1);
       padding-left: 25px;
     }
-    
+
     .submenu-item i {
       margin-right: 12px;
       font-size: 18px;
@@ -106,14 +134,14 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       margin: 30px auto;
       max-width: 600px;
     }
-    
-    
+
+
     .nav-item.has-submenu:hover .submenu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .submenu-item {
       padding: 12px 20px;
       color: white !important;
@@ -122,12 +150,12 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .submenu-item:hover {
       background: rgba(255,255,255,0.1);
       padding-left: 25px;
     }
-    
+
     .submenu-item i {
       margin-right: 12px;
       font-size: 18px;
@@ -141,37 +169,37 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
       margin: 30px auto;
       max-width: 600px;
     }
-    
+
     .sidenav {
       background-color: var(--primary-dark) !important;
     }
-    
+
     .sidenav .nav-link,
     .sidenav .nav-link-text,
     .sidenav .navbar-brand span,
     .sidenav .material-symbols-rounded {
       color: white !important;
     }
-    
+
     .error-message {
       color: red;
       margin-bottom: 15px;
     }
 
-    
+
     .custom-table {
       background: white;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
-    
+
     .custom-table th {
       background-color: var(--accent-blue) !important;
       color: white !important;
       padding: 1rem;
     }
-    
+
     .custom-table td {
       vertical-align: middle;
       padding: 1rem;
@@ -205,17 +233,17 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
         transition: all 0.3s ease;
         padding: 12px 24px;
     }
-    
+
     .pdf-export-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(74, 0, 224, 0.6);
     }
-    
+
     .pdf-export-btn .btn-content {
         position: relative;
         z-index: 1;
     }
-    
+
     .pdf-export-btn .btn-effect {
         position: absolute;
         top: 0;
@@ -226,11 +254,11 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
         transform: translateX(-100%) skewX(-15deg);
         transition: all 0.6s ease;
     }
-    
+
     .pdf-export-btn:hover .btn-effect {
         transform: translateX(0) skewX(-15deg);
     }
-    
+
     /* Sort Button Styles */
     .sort-btn {
         background: linear-gradient(45deg,rgb(40, 85, 80),rgb(40, 85, 80));
@@ -247,17 +275,17 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
         padding: 12px 24px;
         margin-right: 10px;
     }
-    
+
     .sort-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(40, 85, 80);
     }
-    
+
     .sort-btn .btn-content {
         position: relative;
         z-index: 1;
     }
-    
+
     .sort-btn .btn-effect {
         position: absolute;
         top: 0;
@@ -268,7 +296,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
         transform: translateX(-100%) skewX(-15deg);
         transition: all 0.6s ease;
     }
-    
+
     .sort-btn:hover .btn-effect {
         transform: translateX(0) skewX(-15deg);
     }
@@ -291,22 +319,22 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
         margin-top: 20px;
         flex-wrap: wrap;
     }
-    
+
     /* Animation for sorting */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     .table-row-animate {
         animation: fadeIn 0.5s ease forwards;
     }
-    
+
     /* Rotate icon when sorting */
     .rotate-icon {
         animation: rotate 0.5s ease;
     }
-    
+
     @keyframes rotate {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
@@ -454,17 +482,17 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                     </a>
                 </div>
             </div>
-            
+
             <div class="card-body px-0 pt-0">
                 <!-- Search form -->
                 <div class="px-4 pt-3">
                     <form method="GET" class="d-flex w-100">
                         <div class="input-group">
-                            <input type="text" 
-                                   name="search" 
-                                   class="form-control search-input" 
-                                   placeholder="Rechercher par identifiant..." 
-                                   value="<?= htmlspecialchars($search ?? '') ?>" 
+                            <input type="text"
+                                   name="search"
+                                   class="form-control search-input"
+                                   placeholder="Rechercher par identifiant..."
+                                   value="<?= htmlspecialchars($search ?? '') ?>"
                                    aria-label="Rechercher par identifiant">
                                    <button type="submit" class="btn btn-primary search-btn">
                                   <i class="fas fa-search me-2"></i> Rechercher
@@ -472,7 +500,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                         </div>
                     </form>
                 </div>
-                
+
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" id="plansTable">
                         <thead class="bg-light">
@@ -480,6 +508,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Identifiant</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Utilisateur</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Départ</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Retour</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Transport</th>
@@ -490,7 +519,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($tab as $plan): 
+                            <?php foreach ($tab as $plan):
                               $hotel = $hotelC->showHotel($plan['id_hotel']);
                             ?>
                             <tr>
@@ -502,6 +531,9 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                                 </td>
                                 <td>
                                     <span class="text-xs font-weight-normal"><?= $plan['nom_utilisateur'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="text-xs font-weight-normal"><?= $plan['email'] ?></span>
                                 </td>
                                 <td>
                                     <span class="text-xs font-weight-bold"><?= $plan['date_depart'] ?></span>
@@ -537,8 +569,8 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                                                 <i class="fas fa-edit me-1"></i> Modifier
                                             </button>
                                         </form>
-                                        <a href="deletePlanVacance.php?id=<?= $plan['id_plan'] ?>" 
-                                           onclick="confirmDelete(event, <?= $plan['id_plan'] ?>)" 
+                                        <a href="deletePlanVacance.php?id=<?= $plan['id_plan'] ?>"
+                                           onclick="confirmDelete(event, <?= $plan['id_plan'] ?>)"
                                            class="btn btn-sm" style="border: 1px solid #28a745; color: #28a745; border-radius: 4px; padding: 6px 12px;">
                                             <i class="fas fa-trash me-1"></i> Supprimer
                                         </a>
@@ -550,7 +582,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                     </table>
                 </div>
             </div>
-            
+
             <div class="card-footer bg-white border-0 pt-4 pb-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -591,12 +623,12 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  
+
   <script>
     // Delete confirmation function
     function confirmDelete(event, id) {
         event.preventDefault();
-        
+
         const modal = `
             <div class="modal-overlay" style="
                 position: fixed;
@@ -622,13 +654,13 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                     <h4 style="margin-top: 0">Confirmer la suppression</h4>
                     <p>Êtes-vous sûr de vouloir supprimer ce plan de vacances ?</p>
                     <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
-                        <button onclick="this.closest('.modal-overlay').remove()" 
-                                class="btn btn-secondary" 
+                        <button onclick="this.closest('.modal-overlay').remove()"
+                                class="btn btn-secondary"
                                 style="padding: 8px 20px">
                             Annuler
                         </button>
-                        <a href="deletePlanVacance.php?id=${id}" 
-                           class="btn btn-primary" 
+                        <a href="deletePlanVacance.php?id=${id}"
+                           class="btn btn-primary"
                            style="padding: 8px 20px; background-color: #4da6ff; border-color: #4da6ff;">
                            <i class="fas fa-check me-2"></i>Confirmer
                         </a>
@@ -636,7 +668,7 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modal);
     }
 
@@ -644,24 +676,24 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
     document.addEventListener('DOMContentLoaded', function() {
         const { jsPDF } = window.jspdf;
         const exportBtn = document.getElementById('exportPdfBtn');
-        
+
         exportBtn.addEventListener('click', function() {
             // Show loading state
             const originalHtml = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Génération en cours...';
             this.disabled = true;
-            
+
             // Get table data
             const headers = [];
             const rows = [];
-            
+
             // Get headers (skip Actions column)
             document.querySelectorAll('#plansTable thead th').forEach((th, index) => {
                 if (index < 9) { // Only take first 9 columns
                     headers.push(th.textContent.trim());
                 }
             });
-            
+
             // Get rows data
             document.querySelectorAll('#plansTable tbody tr').forEach(tr => {
                 const row = [];
@@ -672,26 +704,26 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                 });
                 rows.push(row);
             });
-            
+
             // Create PDF after short delay
             setTimeout(() => {
                 try {
                     const doc = new jsPDF('p', 'pt', 'a4');
-                    
+
                     // Add title
                     doc.setFontSize(18);
                     doc.setTextColor(40);
                     doc.text('Liste des Plans de Vacances - EasyParki', 40, 40);
-                    
+
                     // Add date and search term if applicable
                     doc.setFontSize(10);
                     doc.setTextColor(100);
                     doc.text('Généré le: ' + new Date().toLocaleDateString(), 40, 60);
-                    
+
                     <?php if (!empty($search)): ?>
                     doc.text('Recherche: "' + <?= json_encode($search) ?> + '"', 40, 75);
                     <?php endif; ?>
-                    
+
                     // Add table if data exists
                     if (rows.length > 0) {
                         doc.autoTable({
@@ -713,10 +745,10 @@ if (isset($_GET['sort']) && $_GET['sort'] == 'date_depart') {
                         doc.setFontSize(12);
                         doc.text('Aucun plan de vacances à afficher', 40, 80);
                     }
-                    
+
                     // Save the PDF
                     doc.save('plans_vacances_easyparki_' + new Date().toISOString().slice(0, 10) + '.pdf');
-                    
+
                 } catch (error) {
                     console.error('PDF generation error:', error);
                     alert('Une erreur est survenue lors de la génération du PDF');

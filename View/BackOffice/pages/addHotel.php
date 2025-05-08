@@ -654,8 +654,8 @@ if (
       if (!nom) {
         showFeedback('nomFeedback', 'Le nom est requis', true);
         return false;
-      } else if (nom.length > 8) {
-        showFeedback('nomFeedback', 'Le nom ne doit pas dépasser 8 caractères', true);
+      } else if (nom.length > 11) {
+        showFeedback('nomFeedback', 'Le nom ne doit pas dépasser 11 caractères', true);
         return false;
       }
       showFeedback('nomFeedback', 'Nom valide', false);
