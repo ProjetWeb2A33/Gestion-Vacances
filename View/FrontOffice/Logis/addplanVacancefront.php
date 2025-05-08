@@ -1,18 +1,21 @@
-<?php 
+<?php
+session_start();
 require_once __DIR__ . '/../../../Controller/planVacanceC.php';
 require_once __DIR__ . '/../../../Model/planVacance.php';
 require_once __DIR__ . '/../../../Controller/HotelC.php';
 
 $error = "";
-$showSuccessMessage = false;
 $planC = new PlanVacanceC();
 $hotelC = new HotelC();
 $hotels = $hotelC->listHotels();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Debug POST data in log file only
+    error_log("Debug POST data: " . print_r($_POST, true));
+
     if (  !empty($_POST['identifiant']) &&
         !empty($_POST['nom_utilisateur']) &&
-       
+        !empty($_POST['email']) &&
         !empty($_POST['date_depart']) &&
         !empty($_POST['date_retour']) &&
         !empty($_POST['type_transport']) &&
@@ -21,10 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         !empty($_POST['id_hotel'])
     ) {
         if (strtotime($_POST['date_retour']) > strtotime($_POST['date_depart'])) {
+            // Debug form validation passed
+            error_log("Debug: Form validation passed");
+
             $plan = new PlanVacance(
                 null,
                 $_POST['identifiant'],
                 $_POST['nom_utilisateur'],
+                $_POST['email'],
                 $_POST['date_depart'],
                 $_POST['date_retour'],
                 $_POST['type_transport'],
@@ -32,8 +39,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['besoin_parking'],
                 $_POST['id_hotel']
             );
-            $planC->addPlan($plan);
-            $showSuccessMessage = true;
+
+            // Try to add the plan and capture the result
+            $result = $planC->addPlan($plan);
+
+            if ($result) {
+                // Plan added successfully
+                error_log("Plan added successfully");
+
+                // Store success info in session and redirect to success page
+                $_SESSION['plan_success'] = true;
+                $_SESSION['plan_email'] = $plan->getEmail();
+
+                // Redirect to success page
+                header('Location: success.php');
+                exit;
+            } else {
+                echo "<div style='background-color: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 5px;'>
+                        Une erreur s'est produite lors de l'ajout du plan de vacances. Veuillez réessayer.
+                      </div>";
+            }
         } else {
             $error = "La date de retour doit être après la date de départ";
         }
@@ -74,9 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <style>
     :root {
-  --primary-color: #0d3f72;       
-  --primary-dark: #08284d;        
-  --secondary-color: #0a1d37;    
+  --primary-color: #0d3f72;
+  --primary-dark: #08284d;
+  --secondary-color: #0a1d37;
   --accent-color: #3a5cb3;        /* Bleu vif */
   --light-color: #f8fafc;         /* Fond très légèrement bleuté */
   --dark-color: #2d3748;          /* Texte foncé doux */
@@ -86,14 +111,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   --border-color: rgba(0,0,0,0.08); /* Bordures subtiles */
   --gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
 }
-    
+
     /* Header & Navigation */
     .header {
       background: rgba(255, 255, 255, 0.98);
       box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
       backdrop-filter: blur(10px);
     }
-    
+
     .sitename {
   font-family: Arial, sans-serif; /* juste changer la police */
   font-weight: 700;
@@ -103,19 +128,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   -webkit-text-fill-color: transparent;
 }
 
-    
+
     .navmenu ul li a {
       position: relative;
       color: var(--dark-color);
       font-weight: 500;
       transition: all 0.3s ease;
     }
-    
+
     .navmenu ul li a:hover,
     .navmenu ul li a.active {
       color: var(--primary-color);
     }
-    
+
     .navmenu ul li a:after {
       content: '';
       position: absolute;
@@ -126,12 +151,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background: var(--gradient);
       transition: width 0.3s ease;
     }
-    
+
     .navmenu ul li a:hover:after,
     .navmenu ul li a.active:after {
       width: 100%;
     }
-    
+
     .btn-getstarted {
       background: var(--gradient);
       border: none;
@@ -142,12 +167,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       box-shadow: 0 5px 15px rgba(74, 166, 255, 0.4);
       transition: all 0.3s ease;
     }
-    
+
     .btn-getstarted:hover {
       transform: translateY(-3px);
       box-shadow: 0 8px 20px rgba(74, 166, 255, 0.6);
     }
-    
+
     /* Hero Section */
     .page-title {
       position: relative;
@@ -156,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: white;
       text-align: center;
     }
-    
+
     .page-title h1 {
       font-family: Arial, sans-serif;
       font-size: 3.5rem;
@@ -165,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       animation: fadeInDown 1s ease;
       text-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
-    
+
     .page-title p {
       font-size: 1.2rem;
       max-width: 700px;
@@ -173,14 +198,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       animation: fadeInUp 1s ease;
       opacity: 0.9;
     }
-    
+
     /* About Section - Redesign */
     .about {
       padding: 100px 0;
       position: relative;
       overflow: hidden;
     }
-    
+
     .about::before {
       content: '';
       position: absolute;
@@ -192,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       opacity: 0.03;
       z-index: -1;
     }
-    
+
     .about h3 {
       font-family: Arial, sans-serif;
       color: var(--secondary-color);
@@ -201,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       position: relative;
       display: inline-block;
     }
-    
+
     .about h3:after {
       content: '';
       position: absolute;
@@ -212,14 +237,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background: var(--gradient);
       border-radius: 2px;
     }
-    
+
     .about .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 30px;
       margin-top: 50px;
     }
-    
+
     .feature-card {
       background: white;
       border-radius: 15px;
@@ -228,12 +253,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       transition: all 0.4s ease;
       border: 1px solid rgba(0,0,0,0.03);
     }
-    
+
     .feature-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
     }
-    
+
     .feature-icon {
       width: 70px;
       height: 70px;
@@ -246,13 +271,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: var(--primary-color);
       font-size: 1.8rem;
     }
-    
+
     .feature-card h4 {
       font-weight: 600;
       margin-bottom: 15px;
       color: var(--secondary-color);
     }
-    
+
     /* Stats Section - Redesign */
     .stats {
       padding: 100px 0;
@@ -261,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       position: relative;
       overflow: hidden;
     }
-    
+
     .stats::before {
       content: '';
       position: absolute;
@@ -272,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background: url('assets/img/dots-bg.png') center/cover no-repeat;
       opacity: 0.1;
     }
-    
+
     .stats-item {
       padding: 40px 30px;
       border-radius: 15px;
@@ -282,12 +307,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       text-align: center;
       border: 1px solid rgba(255,255,255,0.1);
     }
-    
+
     .stats-item:hover {
       transform: translateY(-10px);
       background: rgba(255, 255, 255, 0.15);
     }
-    
+
     .stats-item span {
       font-size: 3rem;
       font-weight: 700;
@@ -297,13 +322,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
+
     /* Testimonials - Redesign */
     .testimonials {
       padding: 120px 0;
       background: linear-gradient(135deg, #f8faff 0%, #f0f7ff 100%);
     }
-    
+
     .testimonial-card {
       background: white;
       padding: 40px 30px;
@@ -315,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       overflow: hidden;
       border: 1px solid rgba(0,0,0,0.03);
     }
-    
+
     .testimonial-card::before {
       content: '"';
       position: absolute;
@@ -326,12 +351,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: rgba(13, 63, 114, 0.05);
       line-height: 1;
     }
-    
+
     .testimonial-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
     }
-    
+
     .testimonial-img {
       width: 80px;
       height: 80px;
@@ -341,13 +366,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       margin-bottom: 20px;
     }
-    
+
     .stars {
       color: #ffc107;
       margin-bottom: 15px;
       font-size: 1.1rem;
     }
-    
+
     /* CTA Section - Redesign */
     .cta-section {
       padding: 100px 0;
@@ -355,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       position: relative;
       text-align: center;
     }
-    
+
     .cta-section::before {
       content: '';
       position: absolute;
@@ -365,12 +390,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       height: 100%;
       background: rgba(13, 63, 114, 0.9);
     }
-    
+
     .cta-content {
       position: relative;
       z-index: 2;
     }
-    
+
     .cta-btn {
       background: white;
       color: var(--primary-color);
@@ -381,18 +406,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       display: inline-block;
       margin-top: 20px;
     }
-    
+
     .cta-btn:hover {
       transform: translateY(-5px);
       box-shadow: 0 10px 30px rgba(255,255,255,0.3);
     }
-    
+
     /* FAQ Section - Redesign */
     .faq-section {
       padding: 100px 0;
       background: #f9fbfe;
     }
-    
+
     .faq-item {
       margin-bottom: 15px;
       border-radius: 12px;
@@ -402,11 +427,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       transition: all 0.3s ease;
       border: 1px solid rgba(0,0,0,0.03);
     }
-    
+
     .faq-item:hover {
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
-    
+
     .faq-item h3 {
       padding: 20px 25px;
       cursor: pointer;
@@ -419,35 +444,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-weight: 500;
       transition: all 0.3s ease;
     }
-    
+
     .faq-item:hover h3 {
       color: var(--primary-color);
     }
-    
+
     .faq-item.active h3 {
       color: var(--primary-color);
     }
-    
+
     .faq-content {
       padding: 0 25px;
       max-height: 0;
       overflow: hidden;
       transition: all 0.4s ease;
     }
-    
+
     .faq-item.active .faq-content {
       padding: 0 25px 25px;
       max-height: 500px;
     }
-    
+
     .faq-toggle {
       transition: transform 0.3s ease;
     }
-    
+
     .faq-item.active .faq-toggle {
       transform: rotate(180deg);
     }
-    
+
     /* Footer - Redesign */
     .footer {
       background: var(--secondary-color);
@@ -455,7 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding-top: 100px;
       position: relative;
     }
-    
+
     .footer::before {
       content: '';
       position: absolute;
@@ -465,14 +490,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       height: 15px;
       background: var(--gradient);
     }
-    
+
     .footer-links h4 {
       font-family: Arial, sans-serif;
       margin-bottom: 25px;
       position: relative;
       display: inline-block;
     }
-    
+
     .footer-links h4::after {
       content: '';
       position: absolute;
@@ -483,7 +508,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background: var(--primary-color);
       border-radius: 3px;
     }
-    
+
     .social-links a {
       display: inline-flex;
       align-items: center;
@@ -496,13 +521,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: white;
       transition: all 0.3s ease;
     }
-    
+
     .social-links a:hover {
       background: white;
       color: var(--primary-color);
       transform: translateY(-3px);
     }
-    
+
     /* Animations */
     @keyframes fadeInDown {
       from {
@@ -514,7 +539,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         transform: translateY(0);
       }
     }
-    
+
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -525,28 +550,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         transform: translateY(0);
       }
     }
-    
+
     /* Responsive */
     @media (max-width: 768px) {
       .page-title h1 {
         font-size: 2.5rem;
       }
-      
+
       .page-title p {
         font-size: 1rem;
       }
-      
+
       .about h3, .section-title h2 {
         font-size: 2rem;
       }
     }
-    
+
     /* Section Title */
     .section-title {
       text-align: center;
       margin-bottom: 60px;
     }
-    
+
     .section-title span {
       color: var(--primary-color);
       font-size: 1rem;
@@ -556,20 +581,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom: 15px;
       text-transform: uppercase;
     }
-    
+
     .section-title h2 {
       font-family: Arial, sans-serif;
       color: var(--secondary-color);
       font-size: 2.5rem;
       margin-bottom: 20px;
     }
-    
+
     .section-title p {
       max-width: 700px;
       margin: 0 auto;
       color: #666;
     }
-    
+
     /* Dropdown styling */
     .dropdown-menu {
       display: none;
@@ -587,13 +612,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       z-index: 1000;
       border: none;
     }
-  
+
     .nav-item.dropdown:hover .dropdown-menu {
       display: block;
       opacity: 1;
       transform: translateY(0);
     }
-  
+
     .dropdown-item {
       padding: 12px 25px;
       color: var(--secondary-color) !important;
@@ -603,19 +628,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       gap: 12px;
       transition: all 0.3s ease;
     }
-  
+
     .dropdown-item:hover {
       background: rgba(13, 63, 114, 0.05);
       padding-left: 30px;
     }
-  
+
     .dropdown-item i {
       color: var(--primary-color);
       font-size: 1.1em;
       width: 24px;
       text-align: center;
     }
-    
+
     /* Floating Get Started Button */
     .floating-btn {
       position: fixed;
@@ -635,18 +660,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-size: 1.5rem;
       text-decoration: none;
     }
-    
+
     .floating-btn:hover {
       transform: translateY(-5px) scale(1.1);
       box-shadow: 0 15px 30px rgba(13, 63, 114, 0.4);
     }
-    
+
     /* Destination Gallery */
     .destination-gallery {
       padding: 100px 0;
       background: #f9fbfe;
     }
-    
+
     .destination-card {
       border-radius: 15px;
       overflow: hidden;
@@ -655,39 +680,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom: 30px;
       position: relative;
     }
-    
+
     .destination-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
     }
-    
+
     .destination-img {
       height: 250px;
       object-fit: cover;
       width: 100%;
       transition: transform 0.5s ease;
     }
-    
+
     .destination-card:hover .destination-img {
       transform: scale(1.05);
     }
-    
+
     .destination-info {
       padding: 20px;
       background: white;
       position: relative;
     }
-    
+
     .destination-info h4 {
       margin-bottom: 10px;
       color: var(--secondary-color);
     }
-    
+
     .destination-info p {
       color: #666;
       margin-bottom: 15px;
     }
-    
+
     .price-tag {
       position: absolute;
       top: -20px;
@@ -699,14 +724,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-weight: 600;
       box-shadow: 0 5px 15px rgba(13, 63, 114, 0.3);
     }
-    
+
     /* How It Works */
     .how-it-works {
       padding: 100px 0;
       position: relative;
       overflow: hidden;
     }
-    
+
     .how-it-works::before {
       content: '';
       position: absolute;
@@ -718,7 +743,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       opacity: 0.05;
       z-index: -1;
     }
-    
+
     .step-card {
       background: white;
       border-radius: 15px;
@@ -730,7 +755,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       position: relative;
       border: 1px solid rgba(0,0,0,0.03);
     }
-    
+
     .step-number {
       width: 60px;
       height: 60px;
@@ -745,18 +770,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin: 0 auto 20px;
       transition: all 0.3s ease;
     }
-    
+
     .step-card:hover {
       transform: translateY(-10px);
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
     }
-    
+
     .step-card:hover .step-number {
       background: var(--gradient);
       color: white;
       transform: scale(1.1);
     }
-    
+
     /* Newsletter */
     .newsletter {
       padding: 80px 0;
@@ -764,7 +789,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: white;
       text-align: center;
     }
-    
+
     .newsletter-form {
       max-width: 600px;
       margin: 40px auto 0;
@@ -774,7 +799,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
-    
+
     .newsletter-input {
       flex: 1;
       border: none;
@@ -782,7 +807,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       outline: none;
       font-size: 1rem;
     }
-    
+
     .newsletter-btn {
       background: var(--secondary-color);
       color: white;
@@ -792,7 +817,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       font-weight: 600;
       transition: all 0.3s ease;
     }
-    
+
     .newsletter-btn:hover {
       background: #08172f;
     }
@@ -925,26 +950,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <?php if(!empty($error)): ?>
                   <div class="alert alert-danger"><?= $error ?></div>
               <?php endif; ?>
-              
+
               <div class="card shadow-lg">
                   <div class="card-body">
                       <form method="POST" id="vacationForm">
                           <div class="row">
                               <div class="col-md-12 form-group">
                                   <label for="nom_utilisateur" class="form-label">Nom Utilisateur</label>
-                                  <input type="text" name="nom_utilisateur" id="nom_utilisateur" class="form-control" 
+                                  <input type="text" name="nom_utilisateur" id="nom_utilisateur" class="form-control"
                                          placeholder="Max 8 caractères" maxlength="8">
                                   <div class="form-feedback" id="nomFeedback"></div>
                               </div>
                           </div>
                           <div class="row">
-    <div class="col-md-12 form-group">
-        <label for="identifiant" class="form-label">Identifiant</label>
-        <input type="text" name="identifiant" id="identifiant" class="form-control" 
-               placeholder="Lettres et chiffres uniquement (max 8)" maxlength="8">
-        <div class="form-feedback" id="identifiantFeedback"></div>
-    </div>
-</div>
+                              <div class="col-md-12 form-group">
+                                  <label for="identifiant" class="form-label">Identifiant</label>
+                                  <input type="text" name="identifiant" id="identifiant" class="form-control"
+                                         placeholder="Lettres et chiffres uniquement (max 8)" maxlength="8">
+                                  <div class="form-feedback" id="identifiantFeedback"></div>
+                              </div>
+                          </div>
+                          <div class="row mt-3">
+                              <div class="col-md-12 form-group">
+                                  <label for="email" class="form-label">Email</label>
+                                  <input type="email" name="email" id="email" class="form-control"
+                                         placeholder="Entrez votre adresse email">
+                                  <div class="form-feedback" id="emailFeedback"></div>
+                              </div>
+                          </div>
 
                           <div class="row mt-3">
                               <div class="col-md-6 form-group">
@@ -990,14 +1023,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                   <label class="form-label">Location de Voiture</label>
                                   <div class="d-flex gap-4">
                                       <div class="form-check">
-                                          <input class="form-check-input" type="radio" name="location_voiture" 
+                                          <input class="form-check-input" type="radio" name="location_voiture"
                                                  id="oui_location" value="oui">
                                           <label class="form-check-label text-success" for="oui_location">
                                               Oui
                                           </label>
                                       </div>
                                       <div class="form-check">
-                                          <input class="form-check-input" type="radio" name="location_voiture" 
+                                          <input class="form-check-input" type="radio" name="location_voiture"
                                                  id="non_location" value="non">
                                           <label class="form-check-label text-danger" for="non_location">
                                               Non
@@ -1011,14 +1044,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                   <label class="form-label">Besoin de Parking</label>
                                   <div class="d-flex gap-4">
                                       <div class="form-check">
-                                          <input class="form-check-input" type="radio" name="besoin_parking" 
+                                          <input class="form-check-input" type="radio" name="besoin_parking"
                                                  id="oui_parking" value="oui">
                                           <label class="form-check-label text-success" for="oui_parking">
                                               Oui
                                           </label>
                                       </div>
                                       <div class="form-check">
-                                          <input class="form-check-input" type="radio" name="besoin_parking" 
+                                          <input class="form-check-input" type="radio" name="besoin_parking"
                                                  id="non_parking" value="non">
                                           <label class="form-check-label text-danger" for="non_parking">
                                               Non
@@ -1059,22 +1092,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
-<!-- Modal de Succès -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Succès</h5>
-      </div>
-      <div class="modal-body">
-        Votre plan de vacances a été créé avec succès !
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="window.location.href='about.php'">OK</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <style>
 .form-feedback {
@@ -1254,7 +1272,7 @@ function validateRadio(fieldName, feedbackId) {
 function validateIdentifiant() {
     const identifiant = document.getElementById('identifiant').value.trim();
     const regex = /^[a-zA-Z0-9]+$/; // Seulement lettres et chiffres
-    
+
     if (!identifiant) {
         showFeedback('identifiantFeedback', 'L\'identifiant est requis', true);
         return false;
@@ -1269,20 +1287,36 @@ function validateIdentifiant() {
     return true;
 }
 
-// Ajoutez un écouteur d'événement pour valider l'identifiant en temps réel
-document.getElementById('identifiant').addEventListener('input', validateIdentifiant);
+function validateEmail() {
+    const email = document.getElementById('email').value.trim();
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email validation
+
+    if (!email) {
+        showFeedback('emailFeedback', 'L\'email est requis', true);
+        return false;
+    } else if (!regex.test(email)) {
+        showFeedback('emailFeedback', 'Format d\'email invalide', true);
+        return false;
+    }
+    showFeedback('emailFeedback', 'Valide', false);
+    return true;
+}
+
+
 // Validation globale
 function validateForm(event) {
     event.preventDefault();
-    
+
     const isNomValid = validateNom();
+    const isIdentifiantValid = validateIdentifiant();
+    const isEmailValid = validateEmail();
     const areDatesValid = validateDates();
     const isTransportValid = validateTransport();
     const isHotelValid = validateHotel();
     const isLocationValid = validateRadio('location_voiture', 'locationFeedback');
     const isParkingValid = validateRadio('besoin_parking', 'parkingFeedback');
 
-    if (isNomValid && areDatesValid && isTransportValid && 
+    if (isNomValid && isIdentifiantValid && isEmailValid && areDatesValid && isTransportValid &&
         isHotelValid && isLocationValid && isParkingValid) {
         // Afficher la modal de confirmation
         var myModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
@@ -1294,11 +1328,13 @@ function validateForm(event) {
 document.addEventListener('DOMContentLoaded', function() {
     // Validation en temps réel
     document.getElementById('nom_utilisateur').addEventListener('input', validateNom);
+    document.getElementById('identifiant').addEventListener('input', validateIdentifiant);
+    document.getElementById('email').addEventListener('input', validateEmail);
     document.getElementById('date_depart').addEventListener('change', validateDates);
     document.getElementById('date_retour').addEventListener('change', validateDates);
     document.getElementById('type_transport').addEventListener('change', validateTransport);
     document.getElementById('id_hotel').addEventListener('change', validateHotel);
-    
+
     // Gestion des radios
     document.querySelectorAll('input[name="location_voiture"]').forEach(radio => {
         radio.addEventListener('change', () => validateRadio('location_voiture', 'locationFeedback'));
@@ -1312,16 +1348,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Confirmation
     document.getElementById('confirmSubmit').addEventListener('click', function() {
+        // Disable form validation to allow direct submission
+        document.getElementById('vacationForm').noValidate = true;
         document.getElementById('vacationForm').submit();
     });
 });
 
-<?php if ($showSuccessMessage): ?>
-    window.addEventListener('DOMContentLoaded', () => {
-        var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-        successModal.show();
-    });
-<?php endif; ?>
+
 </script>
 
 </body>

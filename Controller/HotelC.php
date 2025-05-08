@@ -16,20 +16,20 @@ class HotelC
     function deleteHotel($id)
     {
         $db = config::getConnexion();
-        
+
         try {
             // First delete related plan_vacance entries
             $sql_plan = "DELETE FROM plan_vacance WHERE id_hotel = :id";
             $req_plan = $db->prepare($sql_plan);
             $req_plan->bindValue(':id', $id);
             $req_plan->execute();
-    
+
             // Then delete the hotel
             $sql_hotel = "DELETE FROM hotel WHERE id_hotel = :id";
             $req_hotel = $db->prepare($sql_hotel);
             $req_hotel->bindValue(':id', $id);
             $req_hotel->execute();
-            
+
         } catch (Exception $e) {
             die('Error:' . $e->getMessage());
         }
@@ -37,8 +37,8 @@ class HotelC
 
     function addHotel($hotel)
     {
-        $sql = "INSERT INTO hotel 
-        VALUES (NULL, :nom, :adresse, :ville, :npp, :ppd, :categorie)";
+        $sql = "INSERT INTO hotel
+        VALUES (NULL, :nom, :adresse, :ville, :npp, :ppd, :categorie, :image)";
         $db = config::getConnexion();
         try {
             $query = $db->prepare($sql);
@@ -48,7 +48,8 @@ class HotelC
                 'ville' => $hotel->getVille(),
                 'npp' => $hotel->getNombrePlacesParking(),
                 'ppd' => $hotel->getPlacesParkingDisponibles(),
-                'categorie' => $hotel->getCategorie()
+                'categorie' => $hotel->getCategorie(),
+                'image' => $hotel->getImage()
             ]);
         } catch (Exception $e) {
             echo 'Error: ' . $e->getMessage();
@@ -74,16 +75,17 @@ class HotelC
         try {
             $db = config::getConnexion();
             $query = $db->prepare(
-                'UPDATE hotel SET 
-                    nom_hotel = :nom, 
+                'UPDATE hotel SET
+                    nom_hotel = :nom,
                     adresse = :adresse,
                     ville = :ville,
                     nombre_places_parking = :npp,
                     places_parking_disponibles = :ppd,
-                    categorie = :categorie
+                    categorie = :categorie,
+                    image = :image
                 WHERE id_hotel = :id'
             );
-            
+
             $query->execute([
                 'id' => $id,
                 'nom' => $hotel->getNomHotel(),
@@ -91,7 +93,8 @@ class HotelC
                 'ville' => $hotel->getVille(),
                 'npp' => $hotel->getNombrePlacesParking(),
                 'ppd' => $hotel->getPlacesParkingDisponibles(),
-                'categorie' => $hotel->getCategorie()
+                'categorie' => $hotel->getCategorie(),
+                'image' => $hotel->getImage()
             ]);
         } catch (PDOException $e) {
             $e->getMessage();
