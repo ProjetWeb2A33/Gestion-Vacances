@@ -10,6 +10,7 @@ class Parking
     private string $horaireFerm;
     private string $abonnement;
     private string $tarification;
+    private string $etat;
 
     public function __construct(
         string $nomParking,
@@ -19,7 +20,8 @@ class Parking
         string $horaireOuv,
         string $horaireFerm,
         string $abonnement,
-        string $tarification
+        string $tarification,
+        string $etat = 'actif'
     ) {
         $this->nomParking = $nomParking;
         $this->adresse = $adresse;
@@ -29,6 +31,8 @@ class Parking
         $this->horaireFerm = $horaireFerm;
         $this->abonnement = $abonnement;
         $this->tarification = $tarification;
+        $this->etat = $etat;
+
     }
 
     // Getters
@@ -72,6 +76,11 @@ class Parking
         return $this->tarification;
     }
 
+    public function getEtat(): string
+    {
+        return $this->etat;
+    }
+
     // Setters
     public function setNomParking(string $nomParking): void
     {
@@ -111,5 +120,10 @@ class Parking
     public function setTarification(string $tarification): void
     {
         $this->tarification = $tarification;
+    }
+
+    public function setEtat(string $etat): void
+    {
+        $this->etat = $etat;
     }
 }

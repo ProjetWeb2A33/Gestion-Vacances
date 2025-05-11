@@ -17,22 +17,23 @@ class ParkingP {
         }
     }
 
+    
     public function DeleteParking($ID_Parking) {
         $db = config::getConnexion();
 
         try {
+            // Vérifier si le parking existe
             $checkParking = $db->prepare('SELECT COUNT(*) FROM parking WHERE ID_Parking = :ID_Parking');
             $checkParking->execute(['ID_Parking' => $ID_Parking]);
             if ($checkParking->fetchColumn() == 0) {
                 throw new Exception("Le parking avec l'ID $ID_Parking n'existe pas.");
             }
 
-            $deleteReservations = $db->prepare('DELETE FROM reservation WHERE idParking = :ID_Parking');
-            $deleteReservations->execute(['ID_Parking' => $ID_Parking]);
+            // Mettre à jour l'état du parking à 'supprimé'
+            $updateParking = $db->prepare('UPDATE parking SET etat = "supprimé" WHERE ID_Parking = :ID_Parking');
+            $updateParking->execute(['ID_Parking' => $ID_Parking]);
 
-            $deleteParking = $db->prepare('DELETE FROM parking WHERE ID_Parking = :ID_Parking');
-            $deleteParking->execute(['ID_Parking' => $ID_Parking]);
-
+            return true; // Retourne true si la suppression logique a réussi
         } catch (Exception $e) {
             die('Erreur: ' . $e->getMessage());
         }
@@ -109,11 +110,65 @@ class ParkingP {
         }
     }
 
-    public function envoyerEmailConfirmation($nomParking, $adresseParking, $tarification) {
-        $destinataire = 'msellatihabiba7@gmail.com'; // Remplacez par l'email du destinataire
     
-        return MailController::envoyerEmailConfirmation($nomParking, $adresseParking, $tarification, $destinataire);
+    public function getParkingsSupprimes() {
+        $db = config::getConnexion();
+
+        try {
+            // Récupérer les parkings avec l'état "supprimé"
+            $sql = "SELECT * FROM parking WHERE etat = 'supprimé'";
+            $query = $db->prepare($sql);
+            $query->execute();
+
+            return $query->fetchAll(); // Retourne tous les résultats sous forme de tableau
+        } catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
     }
+
+   
+    public function getParkingsActifs() {
+        $db = config::getConnexion();
+
+        try {
+            // Récupérer uniquement les parkings avec l'état "actif"
+            $sql = "SELECT * FROM parking WHERE etat = 'actif'";
+            $query = $db->prepare($sql);
+            $query->execute();
+
+            return $query->fetchAll(); // Retourne tous les résultats sous forme de tableau
+        } catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
+    }
+
+    
+    public function restaurerParking($id) {
+        $db = config::getConnexion();
+        
+        try {
+            // Mettre à jour l'état du parking à "actif"
+            $sql = "UPDATE parking SET etat = 'actif' WHERE ID_Parking = :id";
+            $query = $db->prepare($sql);
+            $query->execute(['id' => $id]);
+        } catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
+    }
+    
+    public function supprimerParkingDefinitivement($id) {
+        $db = config::getConnexion();
+    
+        try {
+            // Supprimer définitivement le parking de la base de données
+            $sql = "DELETE FROM parking WHERE ID_Parking = :id";
+            $query = $db->prepare($sql);
+            $query->execute(['id' => $id]);
+        } catch (Exception $e) {
+            die('Erreur : ' . $e->getMessage());
+        }
+    }
+    
 
     
        

@@ -142,105 +142,122 @@ class ReservationR {
         }
     }
 
-    
+  
+
     public function getBestParking($horaire_d, $horaire_f) {
-        $conn = Config::getConnexion();
-        
-        // Conversion exacte des heures
-        $heure_debut = (float)explode(':', $horaire_d)[0];
-        $heure_fin = (float)explode(':', $horaire_f)[0];
-        
-        try {
-            // Requête SQL précise avec vérification stricte des horaires
-            $query = $conn->prepare("
-                SELECT 
-                    p.ID_Parking,
-                    p.Nom_Parking,
-                    p.Adresse_Parking,
-                    p.Nombre_Dispo,
-                    p.Tarification,
-                    p.Horaire_Ouv,
-                    p.Horaire_Ferm,
-                    p.Abonnement,
-                    /* Calcul complet du score directement en SQL */
-                    (p.Nombre_Dispo * 0.4) + 
-                    (CASE 
-                        WHEN p.Tarification LIKE '%basique%' THEN 30
-                        WHEN p.Tarification LIKE '%standard%' THEN 20
-                        ELSE 10
-                    END) +
-                    ((p.Horaire_Ferm - p.Horaire_Ouv) * 0.2) +
-                    (CASE
-                        WHEN p.Abonnement LIKE '%Premium%' THEN 10
-                        WHEN p.Abonnement LIKE '%Mensuel%' THEN 7
-                        ELSE 3
-                    END) AS score
+    $db = config::getConnexion();
+
+    try {
+        // Validation des formats HH:MM
+        if (!preg_match('/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/', $horaire_d) || 
+            !preg_match('/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/', $horaire_f)) {
+            throw new Exception("Format d'horaire invalide");
+        }
+
+        // Requête adaptée à votre structure existante
+        $sql = "SELECT p.*, 
+                       (p.Nombre_Dispo / p.Capacite_Totale) * 100 AS disponibilite_score
                 FROM parking p
-                WHERE p.Nombre_Dispo > 0
-                AND :heure_debut >= p.Horaire_Ouv
-                AND :heure_fin <= p.Horaire_Ferm
-                ORDER BY score DESC
-                LIMIT 1
-            ");
-            
-            $query->execute([
-                ':heure_debut' => $heure_debut,
-                ':heure_fin' => $heure_fin
-            ]);
-            
-            $result = $query->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$result) {
-                return null;
-            }
-            
-            // Formatage du score pour l'affichage
-            $result['score'] = round($result['score'], 2);
-            
-            return $result;
-            
-        } catch (PDOException $e) {
-            error_log("Erreur getBestParking: ".$e->getMessage());
+                WHERE TIME(p.Horaire_Ouv) <= TIME(:horaire_d)
+                  AND TIME(p.Horaire_Ferm) >= TIME(:horaire_f)
+                  AND p.Nombre_Dispo > 0
+                ORDER BY 
+                   (p.Nombre_Dispo / p.Capacite_Totale) DESC,
+                   CASE 
+                      WHEN p.Tarification LIKE '%basique%' THEN 1
+                      WHEN p.Tarification LIKE '%services%' THEN 2
+                      WHEN p.Tarification LIKE '%événementielle%' THEN 3
+                      ELSE 4
+                   END,
+                   TIME(p.Horaire_Ferm) - TIME(p.Horaire_Ouv) DESC
+                LIMIT 1";
+
+        $query = $db->prepare($sql);
+        $query->execute([
+            'horaire_d' => $horaire_d,
+            'horaire_f' => $horaire_f
+        ]);
+
+        return $query->fetch(PDO::FETCH_ASSOC);
+
+        } catch (Exception $e) {
+            error_log("Erreur dans getBestParking: " . $e->getMessage());
             return null;
         }
     }
-    
     private function calculateParkingScore($parking) {
-        $score = 0;
-        
-        // Disponibilité (40%)
-        $score += $parking['Nombre_Dispo'] * 0.4;
-        
-        // Tarification (30%)
-        $tarif = strtolower($parking['Tarification']);
-        if (strpos($tarif, 'basique') !== false) $score += 30;
-        elseif (strpos($tarif, 'standard') !== false) $score += 20;
-        else $score += 10;
-        
-        // Plage horaire (20%)
-        $plage = $parking['Horaire_Ferm'] - $parking['Horaire_Ouv'];
-        $score += ($plage / 24) * 20;
-        
-        // Abonnement (10%)
-        $abonnement = strtolower($parking['Abonnement']);
-        if (strpos($abonnement, 'premium') !== false) $score += 10;
-        elseif (strpos($abonnement, 'mensuel') !== false) $score += 7;
-        else $score += 3;
-        
-        return round($score, 2);
-    }
-    
-    private function timeToDecimal($time) {
-        if (is_numeric($time)) return (float)$time;
-        
-        $parts = explode(':', $time);
-        $hour = (float)$parts[0];
-        $minutes = isset($parts[1]) ? (float)$parts[1]/60 : 0;
-        
-        return $hour + $minutes;
-    }
-    
+        // Poids configurables
+        $weights = [
+            'disponibilite' => 0.4,
+            'tarification' => 0.3,
+            'plage_horaire' => 0.2,
+            'abonnement' => 0.1
+        ];
 
+        // 1. Score de disponibilité (40%)
+        $dispoScore = ($parking['Nombre_Dispo'] / $parking['Capacite_Totale']) * $weights['disponibilite'] * 100;
+
+        // 2. Score de tarification (30%)
+        $tarifScore = 0;
+        $tarif = strtolower($parking['Tarification']);
+        if (strpos($tarif, 'basique') !== false) {
+            $tarifScore = 100;
+        } elseif (strpos($tarif, 'services') !== false) {
+            $tarifScore = 70;
+        } elseif (strpos($tarif, 'événementielle') !== false) {
+            $tarifScore = 40;
+        }
+        $tarifScore *= $weights['tarification'];
+
+        // 3. Score de plage horaire (20%)
+        $horaireOuv = $this->timeToDecimal($parking['Horaire_Ouv']);
+        $horaireFerm = $this->timeToDecimal($parking['Horaire_Ferm']);
+        $plageHoraire = max(0, $horaireFerm - $horaireOuv); // Éviter les valeurs négatives
+        $plageScore = ($plageHoraire / 24) * $weights['plage_horaire'] * 100;
+
+        // 4. Score d'abonnement (10%)
+        $abonnementScore = 0;
+        $abonnement = strtolower($parking['Abonnement']);
+        if (strpos($abonnement, 'premium') !== false) {
+            $abonnementScore = 100;
+        } elseif (strpos($abonnement, 'mensuel') !== false) {
+            $abonnementScore = 70;
+        } elseif (strpos($abonnement, 'annuel') !== false) {
+            $abonnementScore = 50;
+        }
+        $abonnementScore *= $weights['abonnement'];
+
+        // Score total
+        $totalScore = $dispoScore + $tarifScore + $plageScore + $abonnementScore;
+
+        return round($totalScore, 2);
+    }
+
+    private function timeToDecimal($time) {
+        if (empty($time)) {
+            return 0;
+        }
+
+        // Nettoyer et formater l'heure
+        $time = preg_replace('/[^0-9:]/', '', $time);
+        $parts = explode(':', $time);
+
+        $hour = (int)$parts[0];
+        $minutes = isset($parts[1]) ? (int)$parts[1] : 0;
+
+        // Validation
+        $hour = max(0, min(23, $hour));
+        $minutes = max(0, min(59, $minutes));
+
+        return $hour + ($minutes / 60);
+    }
+
+    private function validateTime($time) {
+        if (preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $time)) {
+            return $time;
+        }
+        return false;
+    }
 }
 
 ?>
