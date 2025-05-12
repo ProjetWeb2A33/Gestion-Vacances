@@ -6,7 +6,7 @@ $hotelC = new HotelC();
 
 if (isset($_POST["id"])) {
     $hotel = $hotelC->showHotel($_POST["id"]);
-    
+
     if (
         isset($_POST["nom"]) &&
         isset($_POST["adresse"]) &&
@@ -23,17 +23,52 @@ if (isset($_POST["id"])) {
             !empty($_POST["ppd"]) &&
             !empty($_POST["categorie"])
         ) {
-            $updatedHotel = new Hotel(
-                $_POST['id'],
-                $_POST['nom'],
-                $_POST['adresse'],
-                $_POST['ville'],
-                $_POST['npp'],
-                $_POST['ppd'],
-                $_POST['categorie']
-            );
-            $hotelC->updateHotel($updatedHotel, $_POST['id']);
-            header('Location:listHotels.php');
+            // Handle image upload
+            $image_name = $hotel['image']; // Keep existing image by default
+
+            if (isset($_FILES['hotel_image']) && $_FILES['hotel_image']['error'] == 0) {
+                $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+                $filename = $_FILES['hotel_image']['name'];
+                $file_ext = pathinfo($filename, PATHINFO_EXTENSION);
+
+                // Check if the file extension is allowed
+                if (in_array(strtolower($file_ext), $allowed)) {
+                    // Generate unique filename
+                    $new_filename = uniqid('hotel_') . '.' . $file_ext;
+                    $upload_path = '../../../uploads/hotels/' . $new_filename;
+
+                    // Move the uploaded file
+                    if (move_uploaded_file($_FILES['hotel_image']['tmp_name'], $upload_path)) {
+                        // Delete old image if it exists
+                        if (!empty($hotel['image'])) {
+                            $old_image_path = '../../../uploads/hotels/' . $hotel['image'];
+                            if (file_exists($old_image_path)) {
+                                unlink($old_image_path);
+                            }
+                        }
+                        $image_name = $new_filename;
+                    } else {
+                        $error = "Failed to upload image";
+                    }
+                } else {
+                    $error = "Invalid file type. Allowed types: " . implode(', ', $allowed);
+                }
+            }
+
+            if (empty($error)) {
+                $updatedHotel = new Hotel(
+                    $_POST['id'],
+                    $_POST['nom'],
+                    $_POST['adresse'],
+                    $_POST['ville'],
+                    $_POST['npp'],
+                    $_POST['ppd'],
+                    $_POST['categorie'],
+                    $image_name
+                );
+                $hotelC->updateHotel($updatedHotel, $_POST['id']);
+                header('Location:listHotels.php');
+            }
         }
     }
 }
@@ -46,22 +81,22 @@ if (isset($_POST["id"])) {
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="assets/img/easyparki.png">
-  
+
   <title>EasyParki - Modifier Hôtel</title>
-  
+
   <!-- Fonts and icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800" />
   <link href="assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="assets/css/nucleo-svg.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  
+
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  
+
   <!-- Animate.css -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  
+
   <style>
     :root {
       --primary-dark: #0a1d37;
@@ -71,18 +106,18 @@ if (isset($_POST["id"])) {
       --light-gray: #f8f9fa;
       --dark-gray: #343a40;
     }
-    
+
     body {
       background-color: var(--light-gray) !important;
       font-family: 'Poppins', sans-serif;
     }
-    
+
     /* Sidebar styles */
     .sidenav {
       background: linear-gradient(195deg, var(--primary-dark) 0%, #0c2461 100%) !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
-    
+
     .sidenav .nav-link,
     .sidenav .nav-link-text,
     .sidenav .navbar-brand span,
@@ -90,17 +125,17 @@ if (isset($_POST["id"])) {
       color: white !important;
       transition: all 0.3s ease;
     }
-    
+
     .sidenav .nav-link:hover {
       background-color: rgba(255,255,255,0.1);
       transform: translateX(5px);
     }
-    
+
     /* Submenu styles */
     .nav-item.has-submenu {
       position: relative;
     }
-    
+
     .submenu {
       position: absolute;
       left: 0;
@@ -116,13 +151,13 @@ if (isset($_POST["id"])) {
       z-index: 1000;
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
-    
+
     .nav-item.has-submenu:hover .submenu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .submenu-item {
       padding: 12px 20px;
       color: white !important;
@@ -131,12 +166,12 @@ if (isset($_POST["id"])) {
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .submenu-item:hover {
       background: rgba(255,255,255,0.1);
       padding-left: 25px;
     }
-    
+
     .submenu-item i {
       margin-right: 12px;
       font-size: 18px;
@@ -152,12 +187,12 @@ if (isset($_POST["id"])) {
       max-width: 700px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     .form-container:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 35px rgba(0,0,0,0.12);
     }
-    
+
     .form-container h3 {
       color: var(--primary-dark);
       font-weight: 600;
@@ -165,7 +200,7 @@ if (isset($_POST["id"])) {
       position: relative;
       padding-bottom: 10px;
     }
-    
+
     .form-container h3::after {
       content: '';
       position: absolute;
@@ -176,7 +211,7 @@ if (isset($_POST["id"])) {
       background: var(--accent-blue);
       border-radius: 2px;
     }
-    
+
     /* Form elements */
     .form-label {
       font-weight: 500;
@@ -184,27 +219,27 @@ if (isset($_POST["id"])) {
       margin-bottom: 8px;
       display: block;
     }
-    
+
     .form-control, .form-select {
       border-radius: 8px;
       padding: 12px 15px;
       border: 1px solid #e0e0e0;
       transition: all 0.3s ease;
     }
-    
+
     .form-control:focus, .form-select:focus {
       border-color: var(--accent-blue);
       box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
     }
-    
+
     .form-control.is-invalid {
       border: 1px solid var(--accent-red) !important;
     }
-    
+
     .form-control.is-valid {
       border: 1px solid var(--accent-green) !important;
     }
-    
+
     /* Buttons */
     .btn {
       border-radius: 8px;
@@ -213,31 +248,31 @@ if (isset($_POST["id"])) {
       transition: all 0.3s ease;
       letter-spacing: 0.5px;
     }
-    
+
     .btn-primary {
       background-color: var(--accent-blue);
       border-color: var(--accent-blue);
     }
-    
+
     .btn-primary:hover {
       background-color: #3a8de0;
       border-color: #3a8de0;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(77, 166, 255, 0.3);
     }
-    
+
     .btn-secondary {
       background-color: #6c757d;
       border-color: #6c757d;
     }
-    
+
     .btn-secondary:hover {
       background-color: #5a6268;
       border-color: #5a6268;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
     }
-    
+
     /* Feedback messages */
     .error-message {
       color: var(--accent-red);
@@ -248,7 +283,7 @@ if (isset($_POST["id"])) {
       border-left: 4px solid var(--accent-red);
       animation: fadeIn 0.5s ease;
     }
-    
+
     .success-message {
       color: var(--accent-green);
       margin-bottom: 20px;
@@ -258,22 +293,22 @@ if (isset($_POST["id"])) {
       border-left: 4px solid var(--accent-green);
       animation: fadeIn 0.5s ease;
     }
-    
+
     .form-feedback {
       font-size: 0.875rem;
       margin-top: 0.25rem;
       height: 20px;
       animation: fadeIn 0.3s ease;
     }
-    
+
     .form-feedback.error {
       color: var(--accent-red);
     }
-    
+
     .form-feedback.success {
       color: var(--accent-green);
     }
-    
+
     /* Modal styles */
     .confirmation-modal {
       position: fixed;
@@ -291,12 +326,12 @@ if (isset($_POST["id"])) {
       transition: all 0.3s ease;
       backdrop-filter: blur(5px);
     }
-    
+
     .confirmation-modal.active {
       opacity: 1;
       visibility: visible;
     }
-    
+
     .modal-content {
       background: white;
       border-radius: 16px;
@@ -309,57 +344,57 @@ if (isset($_POST["id"])) {
       transition: transform 0.3s ease;
       animation: modalFadeIn 0.4s ease forwards;
     }
-    
+
     .confirmation-modal.active .modal-content {
       transform: scale(1);
     }
-    
+
     .modal-content h3 {
       color: var(--primary-dark);
       margin-bottom: 20px;
       font-weight: 600;
     }
-    
+
     .modal-content p {
       color: #555;
       margin-bottom: 25px;
     }
-    
+
     .modal-buttons {
       display: flex;
       justify-content: center;
       gap: 15px;
       margin-top: 20px;
     }
-    
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes modalFadeIn {
       from { opacity: 0; transform: translateY(-20px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    
+
     /* Floating animation for success elements */
     .floating {
       animation: floating 3s ease-in-out infinite;
     }
-    
+
     @keyframes floating {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
       100% { transform: translateY(0px); }
     }
-    
+
     /* Input focus effect */
     .input-group {
       position: relative;
       margin-bottom: 25px;
     }
-    
+
     .input-group label {
       position: absolute;
       top: -10px;
@@ -373,35 +408,35 @@ if (isset($_POST["id"])) {
       opacity: 0;
       transition: all 0.3s ease;
     }
-    
+
     .form-control:focus ~ label {
       opacity: 1;
       transform: translateY(0);
     }
-    
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .form-container {
         padding: 20px;
         margin: 20px 15px;
       }
-      
+
       .modal-buttons {
         flex-direction: column;
       }
-      
+
       .btn {
         width: 100%;
         margin-bottom: 10px;
       }
     }
-    
+
     /* Custom checkbox and radio */
     .form-check-input:checked {
       background-color: var(--accent-blue);
       border-color: var(--accent-blue);
     }
-    
+
     /* Active menu item */
     .bg-gradient-blue {
       background: linear-gradient(87deg, #1e3c72 0%, #2a5298 100%);
@@ -522,7 +557,7 @@ if (isset($_POST["id"])) {
 
         <?php if(isset($_POST['id'])): ?>
         <h3 class="mb-4">Modifier l'hôtel</h3>
-        <form method="POST" id="hotelForm">
+        <form method="POST" id="hotelForm" enctype="multipart/form-data">
           <input type="hidden" name="id" value="<?= $hotel['id_hotel'] ?>">
           <div class="row">
             <div class="col-md-6">
@@ -531,33 +566,33 @@ if (isset($_POST["id"])) {
                 <input type="text" name="nom" id="nom" class="form-control" value="<?= $hotel['nom_hotel'] ?>" placeholder="Entrez le nom de l'hôtel">
                 <div class="form-feedback" id="nomFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Adresse</label>
                 <input type="text" name="adresse" id="adresse" class="form-control" value="<?= $hotel['adresse'] ?>" placeholder="Entrez l'adresse">
                 <div class="form-feedback" id="adresseFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Ville</label>
                 <input type="text" name="ville" id="ville" class="form-control" value="<?= $hotel['ville'] ?>" placeholder="Entrez la ville">
                 <div class="form-feedback" id="villeFeedback"></div>
               </div>
             </div>
-            
+
             <div class="col-md-6">
               <div class="form-group mb-4">
                 <label class="form-label">Places parking totales</label>
                 <input type="number" name="npp" id="npp" class="form-control" value="<?= $hotel['nombre_places_parking'] ?>" placeholder="Nombre total de places">
                 <div class="form-feedback" id="nppFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Places disponibles</label>
                 <input type="number" name="ppd" id="ppd" class="form-control" value="<?= $hotel['places_parking_disponibles'] ?>" placeholder="Places disponibles">
                 <div class="form-feedback" id="ppdFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Catégorie</label>
                 <select name="categorie" id="categorie" class="form-select">
@@ -572,7 +607,29 @@ if (isset($_POST["id"])) {
               </div>
             </div>
           </div>
-          
+
+          <div class="form-group mb-4">
+            <label class="form-label">Image de l'hôtel</label>
+            <input type="file" name="hotel_image" id="hotel_image" class="form-control" accept="image/*">
+            <div class="form-text text-muted">Formats acceptés: JPG, JPEG, PNG, GIF. Taille max: 2MB</div>
+            <div class="form-feedback" id="imageFeedback"></div>
+
+            <?php if (!empty($hotel['image'])): ?>
+            <div class="mt-3">
+              <p class="mb-2">Image actuelle:</p>
+              <div class="current-image-container" style="max-width: 200px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <img src="../../../uploads/hotels/<?= $hotel['image'] ?>" alt="Image de l'hôtel" class="img-fluid">
+              </div>
+              <div class="form-text text-muted mt-1">Téléchargez une nouvelle image pour remplacer celle-ci.</div>
+            </div>
+            <?php endif; ?>
+
+            <div class="mt-2" id="imagePreviewContainer" style="display: none;">
+              <p class="mb-2">Nouvelle image:</p>
+              <img id="imagePreview" src="#" alt="Aperçu de l'image" style="max-width: 200px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            </div>
+          </div>
+
           <div class="text-end mt-4">
             <button type="submit" class="btn btn-primary animate__animated animate__fadeInRight">
               <i class="fas fa-save me-2"></i>Mettre à jour
@@ -635,11 +692,11 @@ if (isset($_POST["id"])) {
       const feedbackElement = document.getElementById(elementId);
       feedbackElement.textContent = message;
       feedbackElement.className = 'form-feedback ' + (isError ? 'error' : 'success');
-      
+
       // Mettre à jour la classe de l'input/select correspondant
       const inputId = elementId.replace('Feedback', '');
       const inputElement = document.getElementById(inputId);
-      
+
       if (inputElement) {
         if (isError) {
           inputElement.classList.add('is-invalid');
@@ -706,7 +763,7 @@ if (isset($_POST["id"])) {
     function validatePpd() {
       const ppd = document.getElementById('ppd').value;
       const npp = document.getElementById('npp').value;
-      
+
       if (!ppd) {
         showFeedback('ppdFeedback', 'Le nombre disponible est requis', true);
         return false;
@@ -731,19 +788,71 @@ if (isset($_POST["id"])) {
       return true;
     }
 
+    // Validation de l'image
+    function validateImage() {
+      const fileInput = document.getElementById('hotel_image');
+      const feedbackElement = document.getElementById('imageFeedback');
+
+      if (fileInput.files.length === 0) {
+        // L'image est optionnelle, donc pas d'erreur si aucun fichier n'est sélectionné
+        feedbackElement.textContent = '';
+        feedbackElement.className = 'form-feedback';
+        return true;
+      }
+
+      const file = fileInput.files[0];
+      const fileSize = file.size / 1024 / 1024; // en MB
+      const fileType = file.type;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+      if (!validTypes.includes(fileType)) {
+        showFeedback('imageFeedback', 'Format de fichier non valide. Utilisez JPG, JPEG, PNG ou GIF.', true);
+        return false;
+      }
+
+      if (fileSize > 2) {
+        showFeedback('imageFeedback', 'L\'image est trop volumineuse. Taille maximale: 2MB', true);
+        return false;
+      }
+
+      showFeedback('imageFeedback', 'Image valide', false);
+      return true;
+    }
+
+    // Fonction pour afficher l'aperçu de l'image
+    function displayImagePreview() {
+      const fileInput = document.getElementById('hotel_image');
+      const previewContainer = document.getElementById('imagePreviewContainer');
+      const previewImage = document.getElementById('imagePreview');
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          previewImage.src = e.target.result;
+          previewContainer.style.display = 'block';
+        }
+
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        previewContainer.style.display = 'none';
+      }
+    }
+
     // Validation globale
     function validateForm(event) {
       event.preventDefault();
-      
+
       const isNomValid = validateNom();
       const isAdresseValid = validateAdresse();
       const isVilleValid = validateVille();
       const isNppValid = validateNpp();
       const isPpdValid = validatePpd();
       const isCategorieValid = validateCategorie();
+      const isImageValid = validateImage();
 
-      if (isNomValid && isAdresseValid && isVilleValid && 
-          isNppValid && isPpdValid && isCategorieValid) {
+      if (isNomValid && isAdresseValid && isVilleValid &&
+          isNppValid && isPpdValid && isCategorieValid && isImageValid) {
         // Animation avant d'afficher la modale
         document.querySelector('.form-container').classList.add('animate__animated', 'animate__pulse');
         setTimeout(() => {
@@ -766,6 +875,10 @@ if (isset($_POST["id"])) {
       });
       document.getElementById('ppd').addEventListener('input', validatePpd);
       document.getElementById('categorie').addEventListener('change', validateCategorie);
+      document.getElementById('hotel_image').addEventListener('change', function() {
+        validateImage();
+        displayImagePreview();
+      });
 
       // Soumission du formulaire
       document.getElementById('hotelForm').addEventListener('submit', validateForm);
@@ -776,7 +889,7 @@ if (isset($_POST["id"])) {
         const submitBtn = document.querySelector('#hotelForm button[type="submit"]');
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Enregistrement...';
         submitBtn.disabled = true;
-        
+
         // Soumettre le formulaire après un court délai pour l'animation
         setTimeout(() => {
           document.getElementById('hotelForm').submit();

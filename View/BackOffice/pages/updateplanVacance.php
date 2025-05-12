@@ -10,10 +10,11 @@ $hotels = $hotelC->listHotels();
 
 if (isset($_POST["id"])) {
     $plan = $planC->showPlan($_POST["id"]);
-    
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!empty($_POST['identifiant']) &&
             !empty($_POST['nom_utilisateur']) &&
+            !empty($_POST['email']) &&
             !empty($_POST['date_depart']) &&
             !empty($_POST['date_retour']) &&
             !empty($_POST['type_transport']) &&
@@ -26,6 +27,7 @@ if (isset($_POST["id"])) {
                     $_POST['id'],
                     $_POST['identifiant'],
                     $_POST['nom_utilisateur'],
+                    $_POST['email'],
                     $_POST['date_depart'],
                     $_POST['date_retour'],
                     $_POST['type_transport'],
@@ -33,7 +35,14 @@ if (isset($_POST["id"])) {
                     $_POST['besoin_parking'],
                     $_POST['id_hotel']
                 );
-                $planC->updatePlan($updatedPlan, $_POST['id']);
+                // Update the plan
+                $result = $planC->updatePlan($updatedPlan, $_POST['id']);
+
+                // Plan updated successfully
+                if ($result !== false) {
+                    // Just redirect to the list page
+                }
+
                 header('Location: listplanVacance.php');
             } else {
                 $error = "La date de retour doit être après la date de départ";
@@ -52,22 +61,22 @@ if (isset($_POST["id"])) {
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="apple-touch-icon" sizes="76x76" href="assets/img/apple-icon.png">
   <link rel="icon" type="image/png" href="assets/img/easyparki.png">
-  
+
   <title>EasyParki - Modifier Plan de Vacance</title>
-  
+
   <!-- Fonts and icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800" />
   <link href="assets/css/nucleo-icons.css" rel="stylesheet" />
   <link href="assets/css/nucleo-svg.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  
+
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  
+
   <!-- Animate.css -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  
+
   <style>
     :root {
       --primary-dark: #0a1d37;
@@ -77,18 +86,18 @@ if (isset($_POST["id"])) {
       --light-gray: #f8f9fa;
       --dark-gray: #343a40;
     }
-    
+
     body {
       background-color: var(--light-gray) !important;
       font-family: 'Poppins', sans-serif;
     }
-    
+
     /* Sidebar styles */
     .sidenav {
       background: linear-gradient(195deg, var(--primary-dark) 0%, #0c2461 100%) !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
-    
+
     .sidenav .nav-link,
     .sidenav .nav-link-text,
     .sidenav .navbar-brand span,
@@ -96,17 +105,17 @@ if (isset($_POST["id"])) {
       color: white !important;
       transition: all 0.3s ease;
     }
-    
+
     .sidenav .nav-link:hover {
       background-color: rgba(255,255,255,0.1);
       transform: translateX(5px);
     }
-    
+
     /* Submenu styles */
     .nav-item.has-submenu {
       position: relative;
     }
-    
+
     .submenu {
       position: absolute;
       left: 0;
@@ -122,13 +131,13 @@ if (isset($_POST["id"])) {
       z-index: 1000;
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
-    
+
     .nav-item.has-submenu:hover .submenu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .submenu-item {
       padding: 12px 20px;
       color: white !important;
@@ -137,12 +146,12 @@ if (isset($_POST["id"])) {
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .submenu-item:hover {
       background: rgba(255,255,255,0.1);
       padding-left: 25px;
     }
-    
+
     .submenu-item i {
       margin-right: 12px;
       font-size: 18px;
@@ -158,12 +167,12 @@ if (isset($_POST["id"])) {
       max-width: 700px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
+
     .form-container:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 35px rgba(0,0,0,0.12);
     }
-    
+
     .form-container h3 {
       color: var(--primary-dark);
       font-weight: 600;
@@ -171,7 +180,7 @@ if (isset($_POST["id"])) {
       position: relative;
       padding-bottom: 10px;
     }
-    
+
     .form-container h3::after {
       content: '';
       position: absolute;
@@ -182,7 +191,7 @@ if (isset($_POST["id"])) {
       background: var(--accent-blue);
       border-radius: 2px;
     }
-    
+
     /* Form elements */
     .form-label {
       font-weight: 500;
@@ -190,27 +199,27 @@ if (isset($_POST["id"])) {
       margin-bottom: 8px;
       display: block;
     }
-    
+
     .form-control, .form-select {
       border-radius: 8px;
       padding: 12px 15px;
       border: 1px solid #e0e0e0;
       transition: all 0.3s ease;
     }
-    
+
     .form-control:focus, .form-select:focus {
       border-color: var(--accent-blue);
       box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
     }
-    
+
     .form-control.is-invalid {
       border: 1px solid var(--accent-red) !important;
     }
-    
+
     .form-control.is-valid {
       border: 1px solid var(--accent-green) !important;
     }
-    
+
     /* Buttons */
     .btn {
       border-radius: 8px;
@@ -219,31 +228,31 @@ if (isset($_POST["id"])) {
       transition: all 0.3s ease;
       letter-spacing: 0.5px;
     }
-    
+
     .btn-primary {
       background-color: var(--accent-blue);
       border-color: var(--accent-blue);
     }
-    
+
     .btn-primary:hover {
       background-color: #3a8de0;
       border-color: #3a8de0;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(77, 166, 255, 0.3);
     }
-    
+
     .btn-secondary {
       background-color: #6c757d;
       border-color: #6c757d;
     }
-    
+
     .btn-secondary:hover {
       background-color: #5a6268;
       border-color: #5a6268;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
     }
-    
+
     /* Feedback messages */
     .error-message {
       color: var(--accent-red);
@@ -254,7 +263,7 @@ if (isset($_POST["id"])) {
       border-left: 4px solid var(--accent-red);
       animation: fadeIn 0.5s ease;
     }
-    
+
     .success-message {
       color: var(--accent-green);
       margin-bottom: 20px;
@@ -264,42 +273,42 @@ if (isset($_POST["id"])) {
       border-left: 4px solid var(--accent-green);
       animation: fadeIn 0.5s ease;
     }
-    
+
     .form-feedback {
       font-size: 0.875rem;
       margin-top: 0.25rem;
       height: 20px;
       animation: fadeIn 0.3s ease;
     }
-    
+
     .form-feedback.error {
       color: var(--accent-red);
     }
-    
+
     .form-feedback.success {
       color: var(--accent-green);
     }
-    
+
     /* Radio buttons */
     .radio-group {
       display: flex;
       gap: 20px;
       margin-top: 8px;
     }
-    
+
     .radio-group label {
       display: flex;
       align-items: center;
       gap: 8px;
       cursor: pointer;
     }
-    
+
     .radio-group input[type="radio"] {
       width: 18px;
       height: 18px;
       accent-color: var(--accent-blue);
     }
-    
+
     /* Modal styles */
     .confirmation-modal {
       position: fixed;
@@ -317,12 +326,12 @@ if (isset($_POST["id"])) {
       transition: all 0.3s ease;
       backdrop-filter: blur(5px);
     }
-    
+
     .confirmation-modal.active {
       opacity: 1;
       visibility: visible;
     }
-    
+
     .modal-content {
       background: white;
       border-radius: 16px;
@@ -335,57 +344,57 @@ if (isset($_POST["id"])) {
       transition: transform 0.3s ease;
       animation: modalFadeIn 0.4s ease forwards;
     }
-    
+
     .confirmation-modal.active .modal-content {
       transform: scale(1);
     }
-    
+
     .modal-content h3 {
       color: var(--primary-dark);
       margin-bottom: 20px;
       font-weight: 600;
     }
-    
+
     .modal-content p {
       color: #555;
       margin-bottom: 25px;
     }
-    
+
     .modal-buttons {
       display: flex;
       justify-content: center;
       gap: 15px;
       margin-top: 20px;
     }
-    
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes modalFadeIn {
       from { opacity: 0; transform: translateY(-20px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-    
+
     /* Floating animation for success elements */
     .floating {
       animation: floating 3s ease-in-out infinite;
     }
-    
+
     @keyframes floating {
       0% { transform: translateY(0px); }
       50% { transform: translateY(-10px); }
       100% { transform: translateY(0px); }
     }
-    
+
     /* Input focus effect */
     .input-group {
       position: relative;
       margin-bottom: 25px;
     }
-    
+
     .input-group label {
       position: absolute;
       top: -10px;
@@ -399,35 +408,35 @@ if (isset($_POST["id"])) {
       opacity: 0;
       transition: all 0.3s ease;
     }
-    
+
     .form-control:focus ~ label {
       opacity: 1;
       transform: translateY(0);
     }
-    
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .form-container {
         padding: 20px;
         margin: 20px 15px;
       }
-      
+
       .modal-buttons {
         flex-direction: column;
       }
-      
+
       .btn {
         width: 100%;
         margin-bottom: 10px;
       }
     }
-    
+
     /* Custom checkbox and radio */
     .form-check-input:checked {
       background-color: var(--accent-blue);
       border-color: var(--accent-blue);
     }
-    
+
     /* Active menu item */
     .bg-gradient-blue {
       background: linear-gradient(87deg, #1e3c72 0%, #2a5298 100%);
@@ -546,44 +555,51 @@ if (isset($_POST["id"])) {
           <div class="error-message animate__animated animate__shakeX"><?= $error ?></div>
         <?php endif; ?>
 
-        <?php if(isset($_POST['id'])): 
+        <?php if(isset($_POST['id'])):
           $planData = $planC->showPlan($_POST['id']);
         ?>
         <h3 class="mb-4">Modifier le Plan de Vacance</h3>
         <form method="POST" id="planForm">
           <input type="hidden" name="id" value="<?= $planData['id_plan'] ?>">
-          
+
           <div class="row">
             <div class="col-md-6">
               <div class="form-group mb-4">
                 <label class="form-label">Nom Utilisateur</label>
-                <input type="text" name="nom_utilisateur" id="nom_utilisateur" class="form-control" 
+                <input type="text" name="nom_utilisateur" id="nom_utilisateur" class="form-control"
                        value="<?= $planData['nom_utilisateur'] ?>" placeholder="Entrez le nom d'utilisateur">
                 <div class="form-feedback" id="nom_utilisateurFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Identifiant</label>
-                <input type="text" name="identifiant" id="identifiant" class="form-control" 
+                <input type="text" name="identifiant" id="identifiant" class="form-control"
                        value="<?= $planData['identifiant'] ?>" placeholder="Entrez l'identifiant">
                 <div class="form-feedback" id="identifiantFeedback"></div>
               </div>
-              
+
+              <div class="form-group mb-4">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" id="email" class="form-control"
+                       value="<?= $planData['email'] ?>" placeholder="Entrez l'email">
+                <div class="form-feedback" id="emailFeedback"></div>
+              </div>
+
               <div class="form-group mb-4">
                 <label class="form-label">Date Départ</label>
-                <input type="date" name="date_depart" id="date_depart" class="form-control" 
+                <input type="date" name="date_depart" id="date_depart" class="form-control"
                        value="<?= $planData['date_depart'] ?>">
                 <div class="form-feedback" id="date_departFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Date Retour</label>
-                <input type="date" name="date_retour" id="date_retour" class="form-control" 
+                <input type="date" name="date_retour" id="date_retour" class="form-control"
                        value="<?= $planData['date_retour'] ?>">
                 <div class="form-feedback" id="date_retourFeedback"></div>
               </div>
             </div>
-            
+
             <div class="col-md-6">
               <div class="form-group mb-4">
                 <label class="form-label">Type Transport</label>
@@ -598,47 +614,47 @@ if (isset($_POST["id"])) {
                 </select>
                 <div class="form-feedback" id="type_transportFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Location Voiture</label>
                 <div class="radio-group">
                   <label>
-                    <input type="radio" name="location_voiture" value="oui" 
+                    <input type="radio" name="location_voiture" value="oui"
                            <?= ($planData['location_voiture'] == 'oui') ? 'checked' : '' ?>>
                     Oui
                   </label>
                   <label>
-                    <input type="radio" name="location_voiture" value="non" 
+                    <input type="radio" name="location_voiture" value="non"
                            <?= ($planData['location_voiture'] == 'non') ? 'checked' : '' ?>>
                     Non
                   </label>
                 </div>
                 <div class="form-feedback" id="location_voitureFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Besoin Parking</label>
                 <div class="radio-group">
                   <label>
-                    <input type="radio" name="besoin_parking" value="oui" 
+                    <input type="radio" name="besoin_parking" value="oui"
                            <?= ($planData['besoin_parking'] == 'oui') ? 'checked' : '' ?>>
                     Oui
                   </label>
                   <label>
-                    <input type="radio" name="besoin_parking" value="non" 
+                    <input type="radio" name="besoin_parking" value="non"
                            <?= ($planData['besoin_parking'] == 'non') ? 'checked' : '' ?>>
                     Non
                   </label>
                 </div>
                 <div class="form-feedback" id="besoin_parkingFeedback"></div>
               </div>
-              
+
               <div class="form-group mb-4">
                 <label class="form-label">Hôtel</label>
                 <select name="id_hotel" id="id_hotel" class="form-select">
                   <option value="">Sélectionner un hôtel</option>
                   <?php foreach ($hotels as $hotel): ?>
-                    <option value="<?= $hotel['id_hotel'] ?>" 
+                    <option value="<?= $hotel['id_hotel'] ?>"
                             <?= ($hotel['id_hotel'] == $planData['id_hotel']) ? 'selected' : '' ?>>
                       <?= htmlspecialchars($hotel['nom_hotel']) ?> - <?= htmlspecialchars($hotel['ville']) ?>
                     </option>
@@ -648,7 +664,7 @@ if (isset($_POST["id"])) {
               </div>
             </div>
           </div>
-          
+
           <div class="text-end mt-4">
             <button type="submit" class="btn btn-primary animate__animated animate__fadeInRight">
               <i class="fas fa-save me-2"></i>Mettre à jour
@@ -695,6 +711,7 @@ if (isset($_POST["id"])) {
             <i class="fas fa-check-circle fa-4x text-success animate__animated animate__bounceIn"></i>
           </div>
           <p class="text-center">Le plan de vacance a été modifié avec succès!</p>
+          <p class="text-center">Un email de confirmation a été envoyé à l'adresse <strong><?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?></strong>.</p>
         </div>
         <div class="modal-footer justify-content-center">
           <button type="button" class="btn btn-success" data-bs-dismiss="modal" onclick="window.location.href='listplanVacance.php'">
@@ -711,11 +728,11 @@ if (isset($_POST["id"])) {
       const feedbackElement = document.getElementById(elementId);
       feedbackElement.textContent = message;
       feedbackElement.className = 'form-feedback ' + (isError ? 'error' : 'success');
-      
+
       // Mettre à jour la classe de l'input/select correspondant
       const inputId = elementId.replace('Feedback', '');
       const inputElement = document.getElementById(inputId);
-      
+
       if (inputElement) {
         if (isError) {
           inputElement.classList.add('is-invalid');
@@ -756,6 +773,21 @@ if (isset($_POST["id"])) {
       return true;
     }
 
+    function validateEmail() {
+      const email = document.getElementById('email').value.trim();
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email validation
+
+      if (!email) {
+        showFeedback('emailFeedback', 'L\'email est requis', true);
+        return false;
+      } else if (!regex.test(email)) {
+        showFeedback('emailFeedback', 'Format d\'email invalide', true);
+        return false;
+      }
+      showFeedback('emailFeedback', 'Valide', false);
+      return true;
+    }
+
     function validateDateDepart() {
   const today = new Date().toISOString().split('T')[0]; // Obtenir la date actuelle au format YYYY-MM-DD
   const dateDepart = document.getElementById('date_depart').value; // Récupérer la valeur de la date de départ
@@ -777,7 +809,7 @@ if (isset($_POST["id"])) {
     function validateDateRetour() {
       const dateDepart = document.getElementById('date_depart').value;
       const dateRetour = document.getElementById('date_retour').value;
-      
+
       if (!dateRetour) {
         showFeedback('date_retourFeedback', 'La date de retour est requise', true);
         return false;
@@ -825,9 +857,10 @@ if (isset($_POST["id"])) {
     // Validation globale
     function validateForm(event) {
       event.preventDefault();
-      
+
       const isNomValid = validateNomUtilisateur();
       const isIdentifiantValid = validateIdentifiant();
+      const isEmailValid = validateEmail();
       const isDateDepartValid = validateDateDepart();
       const isDateRetourValid = validateDateRetour();
       const isTransportValid = validateTransport();
@@ -835,8 +868,8 @@ if (isset($_POST["id"])) {
       const isParkingValid = validateRadio('besoin_parking', 'besoin_parkingFeedback');
       const isHotelValid = validateHotel();
 
-      if (isNomValid && isIdentifiantValid && isDateDepartValid && 
-          isDateRetourValid && isTransportValid && isLocationValid && 
+      if (isNomValid && isIdentifiantValid && isEmailValid && isDateDepartValid &&
+          isDateRetourValid && isTransportValid && isLocationValid &&
           isParkingValid && isHotelValid) {
         // Animation avant d'afficher la modale
         document.querySelector('.form-container').classList.add('animate__animated', 'animate__pulse');
@@ -853,6 +886,7 @@ if (isset($_POST["id"])) {
       // Validation en temps réel
       document.getElementById('nom_utilisateur').addEventListener('input', validateNomUtilisateur);
       document.getElementById('identifiant').addEventListener('input', validateIdentifiant);
+      document.getElementById('email').addEventListener('input', validateEmail);
       document.getElementById('date_depart').addEventListener('change', function() {
   validateDateDepart();
   if (document.getElementById('date_retour').value) validateDateRetour();
@@ -860,7 +894,7 @@ if (isset($_POST["id"])) {
       document.getElementById('date_retour').addEventListener('change', validateDateRetour);
       document.getElementById('type_transport').addEventListener('change', validateTransport);
       document.getElementById('id_hotel').addEventListener('change', validateHotel);
-      
+
       // Validation pour les radios
       document.querySelectorAll('input[name="location_voiture"]').forEach(radio => {
         radio.addEventListener('change', () => validateRadio('location_voiture', 'location_voitureFeedback'));
@@ -878,7 +912,7 @@ if (isset($_POST["id"])) {
         const submitBtn = document.querySelector('#planForm button[type="submit"]');
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Enregistrement...';
         submitBtn.disabled = true;
-        
+
         // Soumettre le formulaire après un court délai pour l'animation
         setTimeout(() => {
           document.getElementById('planForm').submit();
@@ -888,7 +922,7 @@ if (isset($_POST["id"])) {
       // Définir la date minimale pour les champs de date
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('date_depart').min = today;
-      
+
       // Mise à jour de la date min de retour quand la date de départ change
       document.getElementById('date_depart').addEventListener('change', function() {
         document.getElementById('date_retour').min = this.value;

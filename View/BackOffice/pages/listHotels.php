@@ -27,23 +27,23 @@ if (!empty($search)) {
   <link href="assets/css/nucleo-svg.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  
+
   <!-- CSS Files -->
   <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
-  
+
   <style>
     :root {
       --primary-dark: #0a1d37;
       --accent-blue: #4da6ff;
     }
-    
+
     body {
       background-color: #f8f9fa !important;
     }
     .nav-item.has-submenu {
       position: relative;
     }
-    
+
     .submenu {
       position: absolute;
       left: 0;
@@ -59,13 +59,13 @@ if (!empty($search)) {
       z-index: 1000;
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
-    
+
     .nav-item.has-submenu:hover .submenu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .submenu-item {
       padding: 12px 20px;
       color: white !important;
@@ -74,12 +74,12 @@ if (!empty($search)) {
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .submenu-item:hover {
       background: rgba(255,255,255,0.1);
       padding-left: 25px;
     }
-    
+
     .submenu-item i {
       margin-right: 12px;
       font-size: 18px;
@@ -93,14 +93,14 @@ if (!empty($search)) {
       margin: 30px auto;
       max-width: 600px;
     }
-    
-    
+
+
     .nav-item.has-submenu:hover .submenu {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
-    
+
     .submenu-item {
       padding: 12px 20px;
       color: white !important;
@@ -109,12 +109,12 @@ if (!empty($search)) {
       align-items: center;
       transition: all 0.2s ease;
     }
-    
+
     .submenu-item:hover {
       background: rgba(255,255,255,0.1);
       padding-left: 25px;
     }
-    
+
     .submenu-item i {
       margin-right: 12px;
       font-size: 18px;
@@ -128,37 +128,37 @@ if (!empty($search)) {
       margin: 30px auto;
       max-width: 600px;
     }
-    
+
     .sidenav {
       background-color: var(--primary-dark) !important;
     }
-    
+
     .sidenav .nav-link,
     .sidenav .nav-link-text,
     .sidenav .navbar-brand span,
     .sidenav .material-symbols-rounded {
       color: white !important;
     }
-    
+
     .error-message {
       color: red;
       margin-bottom: 15px;
     }
 
-    
+
     .custom-table {
       background: white;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
-    
+
     .custom-table th {
       background-color: var(--accent-blue) !important;
       color: white !important;
       padding: 1rem;
     }
-    
+
     .custom-table td {
       vertical-align: middle;
       padding: 1rem;
@@ -192,17 +192,17 @@ if (!empty($search)) {
         transition: all 0.3s ease;
         padding: 12px 24px;
     }
-    
+
     .pdf-export-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(74, 0, 224, 0.6);
     }
-    
+
     .pdf-export-btn .btn-content {
         position: relative;
         z-index: 1;
     }
-    
+
     .pdf-export-btn .btn-effect {
         position: absolute;
         top: 0;
@@ -213,11 +213,11 @@ if (!empty($search)) {
         transform: translateX(-100%) skewX(-15deg);
         transition: all 0.6s ease;
     }
-    
+
     .pdf-export-btn:hover .btn-effect {
         transform: translateX(0) skewX(-15deg);
     }
-    
+
     /* Sort Button Styles */
     .sort-btn {
         background: linear-gradient(45deg, #00b09b, #96c93d);
@@ -234,17 +234,17 @@ if (!empty($search)) {
         padding: 12px 24px;
         margin-right: 10px;
     }
-    
+
     .sort-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6);
     }
-    
+
     .sort-btn .btn-content {
         position: relative;
         z-index: 1;
     }
-    
+
     .sort-btn .btn-effect {
         position: absolute;
         top: 0;
@@ -255,7 +255,7 @@ if (!empty($search)) {
         transform: translateX(-100%) skewX(-15deg);
         transition: all 0.6s ease;
     }
-    
+
     .sort-btn:hover .btn-effect {
         transform: translateX(0) skewX(-15deg);
     }
@@ -278,22 +278,22 @@ if (!empty($search)) {
         margin-top: 20px;
         flex-wrap: wrap;
     }
-    
+
     /* Animation for sorting */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     .table-row-animate {
         animation: fadeIn 0.5s ease forwards;
     }
-    
+
     /* Rotate icon when sorting */
     .rotate-icon {
         animation: rotate 0.5s ease;
     }
-    
+
     @keyframes rotate {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
@@ -431,11 +431,11 @@ if (!empty($search)) {
           <div class="px-4 pt-3">
             <form method="GET" class="d-flex w-100">
               <div class="input-group">
-                <input type="text" 
-                       name="search" 
-                       class="form-control search-input" 
-                       placeholder="Rechercher par nom..." 
-                       value="<?= htmlspecialchars($search) ?>" 
+                <input type="text"
+                       name="search"
+                       class="form-control search-input"
+                       placeholder="Rechercher par nom..."
+                       value="<?= htmlspecialchars($search) ?>"
                        aria-label="Rechercher par nom">
                 <button type="submit" class="btn btn-primary search-btn">
                   <i class="fas fa-search me-2"></i> Rechercher
@@ -443,7 +443,7 @@ if (!empty($search)) {
               </div>
             </form>
           </div>
-              <tbody>  
+              <tbody>
             <div class="card-body px-0 pt-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" id="hotelsTable">
@@ -467,6 +467,14 @@ if (!empty($search)) {
                                 </td>
                                 <td>
                                     <div class="d-flex px-2 py-1">
+                                        <?php if (!empty($hotel['image'])): ?>
+                                        <div class="me-3">
+                                            <img src="../../../uploads/hotels/<?= htmlspecialchars($hotel['image']) ?>"
+                                                 class="avatar avatar-sm rounded-circle"
+                                                 alt="<?= htmlspecialchars($hotel['nom_hotel']) ?>"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                        </div>
+                                        <?php endif; ?>
                                         <div class="d-flex flex-column justify-content-center">
                                             <h6 class="mb-0 text-sm"><?= htmlspecialchars($hotel['nom_hotel']) ?></h6>
                                         </div>
@@ -487,7 +495,7 @@ if (!empty($search)) {
                                     </span>
                                 </td>
                                 <td>
-                                    <?php 
+                                    <?php
                                         $categoryClass = [
                                             'standard' => 'bg-gradient-secondary',
                                             'premium' => 'bg-gradient-warning',
@@ -507,8 +515,8 @@ if (!empty($search)) {
     <i class="fas fa-edit me-1"></i> Modifier
 </button>
                                         </form>
-                                        <a href="deleteHotel.php?id=<?= $hotel['id_hotel'] ?>" 
-   onclick="confirmDelete(event, <?= $hotel['id_hotel'] ?>)" 
+                                        <a href="deleteHotel.php?id=<?= $hotel['id_hotel'] ?>"
+   onclick="confirmDelete(event, <?= $hotel['id_hotel'] ?>)"
    class="btn btn-sm" style="border: 1px solid #28a745; color: #28a745; border-radius: 4px; padding: 6px 12px;">
     <i class="fas fa-trash me-1"></i> Supprimer
 </a>
@@ -520,7 +528,7 @@ if (!empty($search)) {
                     </table>
                 </div>
             </div>
-            
+
             <div class="card-footer bg-white border-0 pt-4 pb-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -573,81 +581,81 @@ if (!empty($search)) {
         overflow: hidden;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     }
-    
+
     .card-header {
         padding: 1.5rem;
     }
-    
+
     .table {
         margin-bottom: 0;
     }
-    
+
     .table thead th {
         border-bottom: none;
         padding: 1rem 1.5rem;
         font-size: 0.75rem;
         letter-spacing: 0.5px;
     }
-    
+
     .table tbody tr {
         transition: all 0.2s ease;
     }
-    
+
     .table tbody tr:hover {
         background-color: rgba(0, 0, 0, 0.02);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
-    
+
     .table tbody td {
         padding: 1rem 1.5rem;
         border-top: 1px solid rgba(0, 0, 0, 0.04);
         vertical-align: middle;
     }
-    
+
     .badge {
         padding: 0.35em 0.65em;
         font-size: 0.75em;
         font-weight: 600;
         letter-spacing: 0.5px;
     }
-    
+
     .rounded-pill {
         border-radius: 50px !important;
     }
-    
+
     .btn-outline-info {
         border-color: #17a2b8;
         color: #17a2b8;
     }
-    
+
     .btn-outline-info:hover {
         background-color:rgb(12, 120, 77);
         color: white;
     }
-    
+
     .btn-outline-danger {
         border-color: #dc3545;
         color: #dc3545;
     }
-    
+
     .btn-outline-danger:hover {
         background-color: #dc3545;
         color: white;
     }
-    
+
     .pagination .page-item .page-link {
         border-radius: 8px !important;
         margin: 0 2px;
         color: #495057;
         border: none;
     }
-    
+
     .pagination .page-item.active .page-link {
         background-color: #0d6efd;
         color: white;
     }
-    
+
     .text-xxs {
         font-size: 0.65rem !important;
     }
@@ -668,12 +676,12 @@ if (!empty($search)) {
   <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  
+
   <script>
     // Delete confirmation function
     function confirmDelete(event, id) {
         event.preventDefault();
-        
+
         const modal = `
             <div class="modal-overlay" style="
                 position: fixed;
@@ -699,13 +707,13 @@ if (!empty($search)) {
                     <h4 style="margin-top: 0">Confirmer la suppression</h4>
                     <p>Êtes-vous sûr de vouloir supprimer cet hôtel ?</p>
                     <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
-                        <button onclick="this.closest('.modal-overlay').remove()" 
-                                class="btn btn-secondary" 
+                        <button onclick="this.closest('.modal-overlay').remove()"
+                                class="btn btn-secondary"
                                 style="padding: 8px 20px">
                             Annuler
                         </button>
-                        <a href="deleteHotel.php?id=${id}" 
-   class="btn btn-primary" 
+                        <a href="deleteHotel.php?id=${id}"
+   class="btn btn-primary"
    style="padding: 8px 20px; background-color: #4da6ff; border-color: #4da6ff;">
    <i class="fas fa-check me-2"></i>Confirmer
 </a>
@@ -713,7 +721,7 @@ if (!empty($search)) {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modal);
     }
 
@@ -724,29 +732,29 @@ if (!empty($search)) {
         const table = document.getElementById('hotelsTable');
         const tbody = table.querySelector('tbody');
         let isSorted = false;
-        
+
         sortBtn.addEventListener('click', function() {
             // Add animation to icon
             sortIcon.classList.add('rotate-icon');
-            
+
             // Get all rows
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            
+
             // Sort rows by hotel name (column index 1)
             rows.sort((a, b) => {
                 const nameA = a.cells[1].textContent.trim().toLowerCase();
                 const nameB = b.cells[1].textContent.trim().toLowerCase();
-                
+
                 if (!isSorted) {
                     return nameA.localeCompare(nameB);
                 } else {
                     return nameB.localeCompare(nameA);
                 }
             });
-            
+
             // Toggle sort direction for next click
             isSorted = !isSorted;
-            
+
             // Update icon based on sort direction
             if (isSorted) {
                 sortIcon.classList.remove('fa-sort-alpha-down');
@@ -755,52 +763,52 @@ if (!empty($search)) {
                 sortIcon.classList.remove('fa-sort-alpha-up');
                 sortIcon.classList.add('fa-sort-alpha-down');
             }
-            
+
             // Remove all rows from table
             while (tbody.firstChild) {
                 tbody.removeChild(tbody.firstChild);
             }
-            
+
             // Add fade-in animation class and re-append sorted rows
             rows.forEach((row, index) => {
                 row.classList.add('table-row-animate');
                 row.style.animationDelay = `${index * 0.05}s`;
                 tbody.appendChild(row);
-                
+
                 // Remove animation class after animation completes
                 setTimeout(() => {
                     row.classList.remove('table-row-animate');
                     row.style.animationDelay = '';
                 }, 500 + (index * 50));
             });
-            
+
             // Remove rotation class after animation completes
             setTimeout(() => {
                 sortIcon.classList.remove('rotate-icon');
             }, 500);
         });
-        
+
         // PDF Export Functionality
         const { jsPDF } = window.jspdf;
         const exportBtn = document.getElementById('exportPdfBtn');
-        
+
         exportBtn.addEventListener('click', function() {
             // Show loading state
             const originalHtml = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Génération en cours...';
             this.disabled = true;
-            
+
             // Get table data
             const headers = [];
             const rows = [];
-            
+
             // Get headers (skip Actions column)
             document.querySelectorAll('#hotelsTable thead th').forEach((th, index) => {
                 if (index < 7) { // Only take first 7 columns
                     headers.push(th.textContent.trim());
                 }
             });
-            
+
             // Get rows data
             document.querySelectorAll('#hotelsTable tbody tr').forEach(tr => {
                 const row = [];
@@ -811,22 +819,22 @@ if (!empty($search)) {
                 });
                 rows.push(row);
             });
-            
+
             // Create PDF after short delay
             setTimeout(() => {
                 try {
                     const doc = new jsPDF('p', 'pt', 'a4');
-                    
+
                     // Add title
                     doc.setFontSize(18);
                     doc.setTextColor(40);
                     doc.text('Liste des Hôtels - EasyParki', 40, 40);
-                    
+
                     // Add date
                     doc.setFontSize(10);
                     doc.setTextColor(100);
                     doc.text('Généré le: ' + new Date().toLocaleDateString(), 40, 60);
-                    
+
                     // Add table if data exists
                     if (rows.length > 0) {
                         doc.autoTable({
@@ -848,10 +856,10 @@ if (!empty($search)) {
                         doc.setFontSize(12);
                         doc.text('Aucun hôtel à afficher', 40, 80);
                     }
-                    
+
                     // Save the PDF
                     doc.save('liste_hotels_easyparki_' + new Date().toISOString().slice(0, 10) + '.pdf');
-                    
+
                 } catch (error) {
                     console.error('PDF generation error:', error);
                     alert('Une erreur est survenue lors de la génération du PDF');

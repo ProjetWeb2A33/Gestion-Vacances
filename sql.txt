@@ -12,10 +12,11 @@ CREATE TABLE plan_vacance (
     id_plan INT(11) PRIMARY KEY AUTO_INCREMENT,
     identifiant CHAR(36) NOT NULL,
     nom_utilisateur VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     date_depart DATE NOT NULL,
     date_retour DATE NOT NULL,
     type_transport ENUM('voiture', 'taxi', 'bus', 'plane') NOT NULL,
-    location_volume ENUM('oui', 'non') NOT NULL,
+    location_voiture ENUM('oui', 'non') NOT NULL,
     besoin_parking ENUM('oui', 'non') NOT NULL,
     id_hotel INT(11) NOT NULL,
     FOREIGN KEY (id_hotel) REFERENCES hotel(id_hotel)
